@@ -103,7 +103,7 @@ Selectize.define('custom_itop', function(aOptions) {
 });
 
 
-function ExtKeyWidget(id, sTargetClass, sFilter, sTitle, bSelectMode, oWizHelper, sAttCode, bSearchMode, bDoSearch, sFormAttCode) {
+function ExtKeyWidget(id, sTargetClass, sFilter, sTitle, bSelectMode, oWizHelper, sAttCode, bSearchMode, bDoSearch, sFormAttCode, sParentFormTransactionId) {
 	this.id = id;
 	this.sOriginalTargetClass = sTargetClass;
 	this.sTargetClass = sTargetClass;
@@ -118,6 +118,7 @@ function ExtKeyWidget(id, sTargetClass, sFilter, sTitle, bSelectMode, oWizHelper
 	this.bSearchMode = bSearchMode; // true if selecting a value in the context of a search form
 	this.bDoSearch = bDoSearch; // false if the search is not launched
 	this.sFormAttCode = sFormAttCode;
+	this.sParentFormTransactionId = sParentFormTransactionId;
 
 	var me = this;
 
@@ -670,6 +671,7 @@ function ExtKeyWidget(id, sTargetClass, sFilter, sTitle, bSelectMode, oWizHelper
 			'json': me.oWizardHelper.ToJSON(),
 			operation: 'objectCreationForm',
 			ajax_promise_id: sPromiseId,
+			sParentFormTransactionId: me.sParentFormTransactionId,
 			bTargetClassSelected: bTargetClassSelected
 		};
 
@@ -679,6 +681,7 @@ function ExtKeyWidget(id, sTargetClass, sFilter, sTitle, bSelectMode, oWizHelper
 
 		// Run the query and get the result back directly in HTML
 		var sLocalTargetClass = me.sTargetClass; // Remember the target class since it will be reset when closing the dialog
+		var sParentFormTransactionId = me.sParentFormTransactionId;
 		me.ajax_request = $.post(AddAppContext(GetAbsoluteUrlAppRoot()+'pages/ajax.render.php'), theMap,
 			function (data) {
 				$('#ajax_'+me.id).html(data);
@@ -696,6 +699,8 @@ function ExtKeyWidget(id, sTargetClass, sFilter, sTitle, bSelectMode, oWizHelper
 					if ($('#ac_create_'+me.id).height() > ($(window).height()-70)) {
 						$('#ac_create_'+me.id).height($(window).height()-70);
 					}
+					// Add parent_transaction_id
+					$('#ac_create_'+me.id+' form').append('<input type="hidden" name="parent_transaction_id" value="'+sParentFormTransactionId+'"/>')
 				});
 			},
 			'html'
@@ -730,6 +735,7 @@ function ExtKeyWidget(id, sTargetClass, sFilter, sTitle, bSelectMode, oWizHelper
 				sTargetClass: me.sTargetClass,
 				iInputId: me.id,
 				sAttCode: me.sAttCode,
+				sParentFormTransactionId: me.sParentFormTransactionId,
 				'json': me.oWizardHelper.ToJSON()
 			};
 
