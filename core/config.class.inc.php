@@ -161,6 +161,22 @@ class Config
 			'source_of_value'     => '',
 			'show_in_conf_sample' => false,
 		],
+		'external_keys.force_temporary_object_creation' => [
+			'type' => 'bool',
+			'description' => 'If true, all the objects created by the external key are temporary',
+			'default' => false,
+			'value' => false,
+			'source_of_value' => '',
+			'show_in_conf_sample' => false,
+		],
+		'external_keys.temporary_object_lifetime' => [
+			'type' => 'integer',
+			'description' => 'Seconds for temporary objects created',
+			'default' => 300,
+			'value' => 300,
+			'source_of_value' => '',
+			'show_in_conf_sample' => false,
+		],
 		'app_env_label'                      => [
 			'type'                => 'string',
 			'description'         => 'Label displayed to describe the current application environment, defaults to the environment name (e.g. "production")',

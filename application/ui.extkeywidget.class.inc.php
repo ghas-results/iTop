@@ -166,7 +166,6 @@ class UIExtKeyWidget
 		$bExtensions = true;
 		$sMessage = Dict::S('UI:Message:EmptyList:UseSearchForm');
 		$sAttrFieldPrefix = ($this->bSearchMode) ? '' : 'attr_';
-		$sTransactionId = $oPage->GetTransactionId();
 
 		$sFilter = addslashes($oAllowedValues->GetFilter()->ToOQL());
 		if ($this->bSearchMode) {
@@ -269,7 +268,7 @@ class UIExtKeyWidget
 			$sJsonOptions = str_replace("'", "\'", str_replace('\\', '\\\\', json_encode($aOptions)));
 			$oPage->add_ready_script(
 				<<<EOF
-		oACWidget_{$this->iId} = new ExtKeyWidget('{$this->iId}', '{$this->sTargetClass}', '$sFilter', '$sTitle', true, $sWizHelper, '{$this->sAttCode}', $sJSSearchMode, $sJSDoSearch, '', '$sTransactionId');
+		oACWidget_{$this->iId} = new ExtKeyWidget('{$this->iId}', '{$this->sTargetClass}', '$sFilter', '$sTitle', true, $sWizHelper, '{$this->sAttCode}', $sJSSearchMode, $sJSDoSearch);
 		oACWidget_{$this->iId}.emptyHtml = "<div style=\"background: #fff; border:0; text-align:center; vertical-align:middle;\"><p>$sMessage</p></div>";
 		oACWidget_{$this->iId}.AddSelectize('$sJsonOptions','$value');
 		$('#$this->iId').on('update', function() { oACWidget_{$this->iId}.Update(); } );
@@ -312,7 +311,7 @@ EOF
 			// Scripts to start the autocomplete and bind some events to it
 			$oPage->add_ready_script(
 				<<<EOF
-		oACWidget_{$this->iId} = new ExtKeyWidget('{$this->iId}', '{$this->sTargetClass}', '$sFilter', '$sTitle', false, $sWizHelper, '{$this->sAttCode}', $sJSSearchMode, $sJSDoSearch, '', '$sTransactionId');
+		oACWidget_{$this->iId} = new ExtKeyWidget('{$this->iId}', '{$this->sTargetClass}', '$sFilter', '$sTitle', false, $sWizHelper, '{$this->sAttCode}', $sJSSearchMode, $sJSDoSearch);
 		oACWidget_{$this->iId}.emptyHtml = "<div style=\"background: #fff; border:0; text-align:center; vertical-align:middle;\"><p>$sMessage</p></div>";
 		oACWidget_{$this->iId}.AddAutocomplete($iMinChars, $sWizHelperJSON);
 		if ($('#ac_dlg_{$this->iId}').length == 0)
@@ -483,7 +482,6 @@ JS
 		$bExtensions = true;
 		$sMessage = Dict::S('UI:Message:EmptyList:UseSearchForm');
 		$sAttrFieldPrefix = ($this->bSearchMode) ? '' : 'attr_';
-		$sTransactionId = $oPage->GetTransactionId();
 
 		$sHTMLValue = "<div class=\"field_input_zone field_input_extkey\">";
 		$sFilter = addslashes($oAllowedValues->GetFilter()->ToOQL());
@@ -587,7 +585,7 @@ EOF
 					}
 					$oPage->add_ready_script(
 						<<<EOF
-		oACWidget_{$this->iId} = new ExtKeyWidget('{$this->iId}', '{$this->sTargetClass}', '$sFilter', '$sTitle', true, $sWizHelper, '{$this->sAttCode}', $sJSSearchMode, $sJSDoSearch, '', '$sTransactionId');
+		oACWidget_{$this->iId} = new ExtKeyWidget('{$this->iId}', '{$this->sTargetClass}', '$sFilter', '$sTitle', true, $sWizHelper, '{$this->sAttCode}', $sJSSearchMode, $sJSDoSearch);
 		oACWidget_{$this->iId}.emptyHtml = "<div style=\"background: #fff; border:0; text-align:center; vertical-align:middle;\"><p>$sMessage</p></div>";
 		$('#$this->iId').on('update', function() { oACWidget_{$this->iId}.Update(); } );
 		$('#$this->iId').on('change', function() { $(this).trigger('extkeychange') } );
@@ -625,7 +623,7 @@ EOF
 			// Scripts to start the autocomplete and bind some events to it
 			$oPage->add_ready_script(
 				<<<EOF
-		oACWidget_{$this->iId} = new ExtKeyWidget('{$this->iId}', '{$this->sTargetClass}', '$sFilter', '$sTitle', false, $sWizHelper, '{$this->sAttCode}', $sJSSearchMode, $sJSDoSearch, '', '$sTransactionId');
+		oACWidget_{$this->iId} = new ExtKeyWidget('{$this->iId}', '{$this->sTargetClass}', '$sFilter', '$sTitle', false, $sWizHelper, '{$this->sAttCode}', $sJSSearchMode, $sJSDoSearch);
 		oACWidget_{$this->iId}.emptyHtml = "<div style=\"background: #fff; border:0; text-align:center; vertical-align:middle;\"><p>$sMessage</p></div>";
 		oACWidget_{$this->iId}.AddAutocomplete($iMinChars, $sWizHelperJSON);
 		if ($('#ac_dlg_{$this->iId}').length == 0)
@@ -1071,6 +1069,22 @@ JS
 			if (count($aErrors) == 0)
 			{
 				$oObj->DBInsert();
+				// Is it a temporary object ?
+				$sJSON = utils::ReadParam('json', '{}', false, utils::ENUM_SANITIZATION_FILTER_RAW_DATA);
+				$oJSON = json_decode($sJSON);
+				$sHostClass = $oJSON->m_sClass;
+				$oAttDef = MetaModel::GetAttributeDef($sHostClass, $this->sAttCode);
+				if ($oAttDef->Get('create_temporary_object') || MetaModel::GetConfig()->Get('external_keys.force_temporary_object_creation')) {
+					// Add a temporary descriptor
+					$sParentTransactionId = utils::ReadParam('parent_transaction_id', '', false, utils::ENUM_SANITIZATION_FILTER_TRANSACTION_ID);
+					$oTemporaryObjectDescriptor = MetaModel::NewObject(TemporaryObjectDescriptor::class, [
+						'temp_id' => $sParentTransactionId,
+						'expire' => time() + MetaModel::GetConfig()->Get('external_keys.temporary_object_lifetime'),
+						'item_class' => $this->sTargetClass,
+						'item_id' => $oObj->GetKey(),
+					]);
+					$oTemporaryObjectDescriptor->DBInsert();
+				}
 				return array('name' => $oObj->GetName(), 'id' => $oObj->GetKey());
 			}
 			else

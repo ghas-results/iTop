@@ -22,6 +22,7 @@ SetupWebPage::AddModule(
 		//
 		'datamodel' => array(
 			'main.itop-structure.php',
+			'src/Model/TemporaryObjectDescriptor.php',
 			'model.itop-structure.php',
 		),
 		'data.struct' => array(
