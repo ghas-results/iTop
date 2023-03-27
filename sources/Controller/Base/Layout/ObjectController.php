@@ -19,6 +19,7 @@ use CoreCannotSaveObjectException;
 use DeleteException;
 use Dict;
 use Exception;
+use TemporaryObjectFormValidator;
 use IssueLog;
 use iTopOwnershipLock;
 use iTopWebPage;
@@ -39,6 +40,18 @@ use utils;
 class ObjectController extends AbstractController
 {
 	public const ROUTE_NAMESPACE = 'object';
+
+	/** @var TemporaryObjectFormValidator $oTemporaryObjectFormValidator */
+	private TemporaryObjectFormValidator $oTemporaryObjectFormValidator;
+
+	/**
+	 * Constructor.
+	 *
+	 */
+	public function __construct()
+	{
+		$this->oTemporaryObjectFormValidator = TemporaryObjectFormValidator::GetInstance();
+	}
 
 	/**
 	 * @return \iTopWebPage|\AjaxPage Object edit form in its webpage
@@ -220,10 +233,10 @@ JS;
 				{
 					IssueLog::Trace(__CLASS__.'::'.__METHOD__.' Object not created (see $aErrors)', $sClass, array(
 						'$sTransactionId' => $sTransactionId,
-						'$aErrors' => $aErrors,
-						'$sUser' => UserRights::GetUser(),
-						'HTTP_REFERER' => @$_SERVER['HTTP_REFERER'],
-						'REQUEST_URI' => @$_SERVER['REQUEST_URI'],
+						'$aErrors'        => $aErrors,
+						'$sUser'          => UserRights::GetUser(),
+						'HTTP_REFERER'    => @$_SERVER['HTTP_REFERER'],
+						'REQUEST_URI'     => @$_SERVER['REQUEST_URI'],
 					));
 
 					throw new CoreCannotSaveObjectException(array('id' => $oObj->GetKey(), 'class' => $sClass, 'issues' => $aErrors));
@@ -231,13 +244,16 @@ JS;
 
 				$oObj->DBInsertNoReload();// No need to reload
 
+				// validate temporary objects
+				$this->oTemporaryObjectFormValidator->Validate($sTransactionId, $oObj);
+
 				IssueLog::Trace(__CLASS__.'::'.__METHOD__.' Object created', $sClass, array(
-					'$id' => $oObj->GetKey(),
+					'$id'             => $oObj->GetKey(),
 					'$sTransactionId' => $sTransactionId,
-					'$aErrors' => $aErrors,
-					'$sUser' => UserRights::GetUser(),
-					'HTTP_REFERER' => @$_SERVER['HTTP_REFERER'],
-					'REQUEST_URI' => @$_SERVER['REQUEST_URI'],
+					'$aErrors'        => $aErrors,
+					'$sUser'          => UserRights::GetUser(),
+					'HTTP_REFERER'    => @$_SERVER['HTTP_REFERER'],
+					'REQUEST_URI'     => @$_SERVER['REQUEST_URI'],
 				));
 
 				utils::RemoveTransaction($sTransactionId);
@@ -418,23 +434,25 @@ JS;
 			else
 			{
 				IssueLog::Trace(__CLASS__.'::'.__METHOD__.' Object updated', $sClass, array(
-					'$id' => $id,
+					'$id'             => $id,
 					'$sTransactionId' => $sTransactionId,
-					'$aErrors' => $aErrors,
-					'IsModified' => $oObj->IsModified(),
-					'$sUser' => UserRights::GetUser(),
-					'HTTP_REFERER' => @$_SERVER['HTTP_REFERER'],
-					'REQUEST_URI' => @$_SERVER['REQUEST_URI'],
+					'$aErrors'        => $aErrors,
+					'IsModified'      => $oObj->IsModified(),
+					'$sUser'          => UserRights::GetUser(),
+					'HTTP_REFERER'    => @$_SERVER['HTTP_REFERER'],
+					'REQUEST_URI'     => @$_SERVER['REQUEST_URI'],
 				));
 
-				try
-				{
-					if (!empty($aErrors))
-					{
+				try {
+					if (!empty($aErrors)) {
 						throw new CoreCannotSaveObjectException(array('id' => $oObj->GetKey(), 'class' => $sClass, 'issues' => $aErrors));
 					}
 					// Transactions are now handled in DBUpdate
 					$oObj->DBUpdate();
+
+					// validate temporary objects
+					$this->oTemporaryObjectFormValidator->Validate($sTransactionId, $oObj);
+
 					$sMessage = Dict::Format('UI:Class_Object_Updated', MetaModel::GetName(get_class($oObj)), $oObj->GetName());
 					$sSeverity = 'ok';
 					if ($this->IsHandlingXmlHttpRequest()) {

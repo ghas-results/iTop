@@ -1066,35 +1066,50 @@ JS
 		{
 			$oObj = MetaModel::NewObject($this->sTargetClass);
 			$aErrors = $oObj->UpdateObjectFromPostedForm($this->iId);
-			if (count($aErrors) == 0)
-			{
+			if (count($aErrors) == 0) {
 				$oObj->DBInsert();
-				// Is it a temporary object ?
-				$sJSON = utils::ReadParam('json', '{}', false, utils::ENUM_SANITIZATION_FILTER_RAW_DATA);
-				$oJSON = json_decode($sJSON);
-				$sHostClass = $oJSON->m_sClass;
-				$oAttDef = MetaModel::GetAttributeDef($sHostClass, $this->sAttCode);
-				if ($oAttDef->Get('create_temporary_object') || MetaModel::GetConfig()->Get('external_keys.force_temporary_object_creation')) {
-					// Add a temporary descriptor
-					$sParentTransactionId = utils::ReadParam('parent_transaction_id', '', false, utils::ENUM_SANITIZATION_FILTER_TRANSACTION_ID);
-					$oTemporaryObjectDescriptor = MetaModel::NewObject(TemporaryObjectDescriptor::class, [
-						'temp_id' => $sParentTransactionId,
-						'expire' => time() + MetaModel::GetConfig()->Get('external_keys.temporary_object_lifetime'),
-						'item_class' => $this->sTargetClass,
-						'item_id' => $oObj->GetKey(),
-					]);
-					$oTemporaryObjectDescriptor->DBInsert();
-				}
+
+				// Handle temporary objects
+				$this->HandleTemporaryObject($oObj);
+
 				return array('name' => $oObj->GetName(), 'id' => $oObj->GetKey());
-			}
-			else
-			{
+			} else {
 				return array('error' => implode(' ', $aErrors), 'id' => 0);
 			}
 		}
-		catch(Exception $e)
-		{
+		catch (Exception $e) {
 			return array('error' => $e->getMessage(), 'id' => 0);
+		}
+	}
+
+	/**
+	 * HandleTemporaryObject.
+	 *
+	 * @param DBObject $oTargetObject
+	 *
+	 * @return void
+	 */
+	private function HandleTemporaryObject(DBObject $oTargetObject)
+	{
+		// Retrieve temporary object manager
+		$oTemporaryObjectManager = TemporaryObjectManager::GetInstance();
+
+		// Retrieve JSON data
+		$sJSON = utils::ReadParam('json', '{}', false, utils::ENUM_SANITIZATION_FILTER_RAW_DATA);
+		$oJSON = json_decode($sJSON);
+
+		// Retrieve attribute definition
+		$oAttDef = MetaModel::GetAttributeDef($oJSON->m_sClass, $this->sAttCode);
+
+		// If creation as temporary object requested or force for all objects
+		if (($oAttDef->IsParam('create_temporary_object') && $oAttDef->Get('create_temporary_object'))
+			|| MetaModel::GetConfig()->Get(TemporaryObjectHelper::CONFIG_FORCE)) {
+
+			// Retrieve root transaction id
+			$sRootTransactionId = utils::ReadParam('root_transaction_id', '', false, utils::ENUM_SANITIZATION_FILTER_TRANSACTION_ID);
+
+			// Create temporary object descriptor
+			$oTemporaryObjectManager->CreateTemporaryObject($sRootTransactionId, $this->sTargetClass, $oTargetObject->GetKey(), TemporaryObjectExtKeyValidator::class);
 		}
 	}
 

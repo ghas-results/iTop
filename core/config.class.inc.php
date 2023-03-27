@@ -137,7 +137,7 @@ class Config
 			'source_of_value'     => '',
 			'show_in_conf_sample' => false,
 		],
-		'log_purge.max_keep_days' => [
+		'log_purge.max_keep_days'                       => [
 			'type'                => 'integer',
 			'description'         => 'Optional purge number of days to keep logs.',
 			'default'             => 365,
@@ -145,7 +145,7 @@ class Config
 			'source_of_value'     => '',
 			'show_in_conf_sample' => false,
 		],
-		'event_service.debug.filter_events'  => [
+		'event_service.debug.filter_events'             => [
 			'type'                => 'array',
 			'description'         => 'List of events name to filter Event Service debug messages',
 			'default'             => [],
@@ -153,7 +153,7 @@ class Config
 			'source_of_value'     => '',
 			'show_in_conf_sample' => false,
 		],
-		'event_service.debug.filter_sources' => [
+		'event_service.debug.filter_sources'            => [
 			'type'                => 'array',
 			'description'         => 'List of event sources to filter Event Service debug messages',
 			'default'             => '',
@@ -162,22 +162,30 @@ class Config
 			'show_in_conf_sample' => false,
 		],
 		'external_keys.force_temporary_object_creation' => [
-			'type' => 'bool',
-			'description' => 'If true, all the objects created by the external key are temporary',
-			'default' => false,
-			'value' => false,
-			'source_of_value' => '',
+			'type'                => 'bool',
+			'description'         => 'If true, all the objects created by the external key are temporary',
+			'default'             => false,
+			'value'               => false,
+			'source_of_value'     => '',
 			'show_in_conf_sample' => false,
 		],
-		'external_keys.temporary_object_lifetime' => [
-			'type' => 'integer',
-			'description' => 'Seconds for temporary objects created',
-			'default' => 300,
-			'value' => 300,
-			'source_of_value' => '',
+		'external_keys.temporary_object_lifetime'       => [
+			'type'                => 'integer',
+			'description'         => 'Seconds for temporary objects created',
+			'default'             => 300,
+			'value'               => 300,
+			'source_of_value'     => '',
 			'show_in_conf_sample' => false,
 		],
-		'app_env_label'                      => [
+		'external_keys.watchdog_interval'               => [
+			'type'                => 'integer',
+			'description'         => 'Seconds between watchdog signals',
+			'default'             => 60,
+			'value'               => false,
+			'source_of_value'     => '',
+			'show_in_conf_sample' => false,
+		],
+		'app_env_label'                                 => [
 			'type'                => 'string',
 			'description'         => 'Label displayed to describe the current application environment, defaults to the environment name (e.g. "production")',
 			'default'             => '',
@@ -185,7 +193,7 @@ class Config
 			'source_of_value'     => '',
 			'show_in_conf_sample' => false,
 		],
-		'app_root_url'                       => [
+		'app_root_url'                                  => [
 			'type'                => 'string',
 			'description'         => 'Root URL used for navigating within the application, or from an email to the application (you can put $SERVER_NAME$ as a placeholder for the server\'s name)',
 			'default'             => '',
@@ -193,7 +201,7 @@ class Config
 			'source_of_value'     => '',
 			'show_in_conf_sample' => true,
 		],
-		'app_icon_url'                       => [
+		'app_icon_url'                                  => [
 			'type'                => 'string',
 			'description'         => 'Hyperlink to redirect the user when clicking on the application icon (in the main window, or login/logoff pages)',
 			'default'             => 'http://www.combodo.com/itop',
@@ -201,7 +209,7 @@ class Config
 			'source_of_value'     => '',
 			'show_in_conf_sample' => false,
 		],
-		'db_host'                            => [
+		'db_host'                                       => [
 			'type'                => 'string',
 			'default'             => null,
 			'value'               => '',

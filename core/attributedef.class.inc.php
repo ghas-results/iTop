@@ -7004,7 +7004,7 @@ class AttributeExternalKey extends AttributeDBFieldVoid
 
 	public static function ListExpectedParams()
 	{
-		return array_merge(parent::ListExpectedParams(), array("targetclass", "is_null_allowed", "create_temporary_object", "on_target_delete"));
+		return array_merge(parent::ListExpectedParams(), array("targetclass", "is_null_allowed", "on_target_delete"));
 	}
 
 	public function GetEditClass()
@@ -7168,16 +7168,6 @@ class AttributeExternalKey extends AttributeDBFieldVoid
 		}
 
 		return (int)$proposedValue;
-	}
-
-	public function WriteExternalValues(DBObject $oHostObject): void
-	{
-		$sTargetKey = $oHostObject->Get($this->GetCode());
-		$oFilter = DBSearch::FromOQL('SELECT `'.TemporaryObjectDescriptor::class.'` WHERE item_class=:class AND item_id=:id');
-		$oSet = new DBObjectSet($oFilter, [], ['class' => $this->GetTargetClass(), 'id' => $sTargetKey]);
-		while ($oTemporaryObjectDescriptor = $oSet->Fetch()) {
-			$oTemporaryObjectDescriptor->DBDelete();
-		}
 	}
 
 	public function GetMaximumComboLength()
