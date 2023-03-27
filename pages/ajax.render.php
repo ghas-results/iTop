@@ -815,6 +815,10 @@ try
 					$bReleaseLock = iTopOwnershipLock::ReleaseLock($sObjClass, $iObjKey, $sToken);
 				}
 
+				// Invalidate temporary objects
+				$oTemporaryObjectFormValidator = TemporaryObjectFormValidator::GetInstance();
+				$oTemporaryObjectFormValidator->Invalidate($iTransactionId);
+
 				IssueLog::Trace('on_form_cancel', $sObjClass, array(
 					'$iObjKey'        => $iObjKey,
 					'$sTransactionId' => $iTransactionId,

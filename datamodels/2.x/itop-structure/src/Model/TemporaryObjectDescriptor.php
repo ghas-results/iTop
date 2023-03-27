@@ -4,7 +4,10 @@
  * @license     http://opensource.org/licenses/AGPL-3.0
  */
 
-
+/**
+ *
+ * @since 3.1
+ */
 class TemporaryObjectDescriptor extends DBObject
 {
 	public static function Init()
@@ -34,17 +37,21 @@ class TemporaryObjectDescriptor extends DBObject
 		);
 		MetaModel::Init_Params($aParams);
 		MetaModel::Init_InheritAttributes();
-		MetaModel::Init_AddAttribute(new AttributeDateTime('expire', array('sql' => 'expire', 'is_null_allowed' => false, 'default_value' => '', 'allowed_values' => null, 'depends_on' => array(), 'always_load_in_tables' => false)));
+		MetaModel::Init_AddAttribute(new AttributeDateTime('expiration_date', array('sql' => 'expiration_date', 'is_null_allowed' => false, 'default_value' => '', 'allowed_values' => null, 'depends_on' => array(), 'always_load_in_tables' => false)));
 		MetaModel::Init_AddAttribute(new AttributeString('temp_id', array('sql' => 'temp_id', 'is_null_allowed' => true, 'default_value' => '', 'allowed_values' => null, 'depends_on' => array(), 'always_load_in_tables' => false)));
 		MetaModel::Init_AddAttribute(new AttributeString('item_class', array('sql' => 'item_class', 'is_null_allowed' => false, 'default_value' => '', 'allowed_values' => null, 'depends_on' => array(), 'always_load_in_tables' => false)));
 		MetaModel::Init_AddAttribute(new AttributeObjectKey('item_id', array('class_attcode' => 'item_class', 'sql' => 'item_id', 'is_null_allowed' => true, 'allowed_values' => null, 'depends_on' => array(), 'always_load_in_tables' => false)));
 		MetaModel::Init_AddAttribute(new AttributeDateTime('creation_date', array('sql' => 'creation_date', 'is_null_allowed' => true, 'default_value' => '', 'allowed_values' => null, 'depends_on' => array(), 'always_load_in_tables' => false)));
-
+		MetaModel::Init_AddAttribute(new AttributeString('validator_class', array('sql' => 'validator_class', 'is_null_allowed' => true, 'default_value' => '', 'allowed_values' => null, 'depends_on' => array(), 'always_load_in_tables' => false)));
+		MetaModel::Init_AddAttribute(new AttributeString('metadata', array('sql' => 'metadata', 'is_null_allowed' => false, 'default_value' => '{}', 'allowed_values' => null, 'depends_on' => array(), 'always_load_in_tables' => false)));
 
 		MetaModel::Init_SetZListItems('details', array(
 			0 => 'temp_id',
 			1 => 'item_class',
 			2 => 'item_id',
+			3 => 'creation_date',
+			4 => 'expiration_date',
+			5 => 'meta',
 		));
 		MetaModel::Init_SetZListItems('standard_search', array(
 			0 => 'temp_id',
@@ -56,6 +63,7 @@ class TemporaryObjectDescriptor extends DBObject
 			1 => 'item_class',
 			2 => 'item_id',
 			3 => 'creation_date',
+			4 => 'expiration_date',
 		));;
 	}
 

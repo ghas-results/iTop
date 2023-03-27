@@ -437,6 +437,7 @@ return array(
     'Combodo\\iTop\\Renderer\\FormRenderer' => $baseDir . '/sources/Renderer/FormRenderer.php',
     'Combodo\\iTop\\Renderer\\RenderingOutput' => $baseDir . '/sources/Renderer/RenderingOutput.php',
     'Combodo\\iTop\\Router\\Router' => $baseDir . '/sources/Router/Router.php',
+    'Combodo\\iTop\\Service\\Base\\ObjectHelper' => $baseDir . '/sources/Service/Base/ObjectHelper.php',
     'Combodo\\iTop\\Service\\Base\\ObjectRepository' => $baseDir . '/sources/Service/Base/ObjectRepository.php',
     'Combodo\\iTop\\Service\\Base\\iDataPostProcessor' => $baseDir . '/sources/Service/Base/iDataPostProcessor.php',
     'Combodo\\iTop\\Service\\Events\\Description\\EventDataDescription' => $baseDir . '/sources/Application/Service/Events/Description/EventDataDescription.php',
