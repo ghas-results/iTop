@@ -4,6 +4,12 @@
  * @license     http://opensource.org/licenses/AGPL-3.0
  */
 
+namespace Combodo\iTop\Service\TemporaryObjects;
+
+use AttributeExternalKey;
+use DBObject;
+use MetaModel;
+
 /**
  * TemporaryObjectExtKeyValidator.
  *

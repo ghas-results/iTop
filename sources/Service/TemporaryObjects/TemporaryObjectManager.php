@@ -4,7 +4,13 @@
  * @license     http://opensource.org/licenses/AGPL-3.0
  */
 
+namespace Combodo\iTop\Service\TemporaryObjects;
+
 use Combodo\iTop\Service\Base\ObjectRepository;
+use ExceptionLog;
+use IssueLog;
+use MetaModel;
+use TemporaryObjectDescriptor;
 
 /**
  * TemporaryObjectManager.
@@ -42,7 +48,7 @@ class TemporaryObjectManager
 	private function __construct()
 	{
 		// Initialize temporary object repository
-		$this->oTemporaryObjectRepository = new TemporaryObjectRepository();
+		$this->oTemporaryObjectRepository = TemporaryObjectRepository::GetInstance();
 	}
 
 	/**
