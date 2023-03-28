@@ -7,6 +7,9 @@
 use Combodo\iTop\Application\UI\Base\Component\Form\FormUIBlockFactory;
 use Combodo\iTop\Application\UI\Base\Layout\UIContentBlockUIBlockFactory;
 use Combodo\iTop\Core\MetaModel\FriendlyNameType;
+use Combodo\iTop\Service\TemporaryObjects\TemporaryObjectExtKeyValidator;
+use Combodo\iTop\Service\TemporaryObjects\TemporaryObjectHelper;
+use Combodo\iTop\Service\TemporaryObjects\TemporaryObjectManager;
 
 require_once(APPROOT.'/application/displayblock.class.inc.php');
 

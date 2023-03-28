@@ -4,14 +4,17 @@
  * @license     http://opensource.org/licenses/AGPL-3.0
  */
 
-namespace Controller;
+namespace Combodo\iTop\Controller\TemporaryObjects;
 
 use Combodo\iTop\Controller\AbstractController;
+use Combodo\iTop\Service\TemporaryObjects\TemporaryObjectManager;
 use JsonPage;
-use TemporaryObjectManager;
 use utils;
 
 /**
+ * TemporaryObjectController.
+ *
+ * Temporary object endpoints.
  *
  * @since 3.1
  */
@@ -19,7 +22,7 @@ class TemporaryObjectController extends AbstractController
 {
 	public const ROUTE_NAMESPACE = 'temporary_object';
 
-	/** @var \TemporaryObjectManager Temporary object manager */
+	/** @var \Combodo\iTop\Service\TemporaryObjects\TemporaryObjectManager Temporary object manager */
 	private TemporaryObjectManager $oTemporaryObjectManager;
 
 	/**
@@ -35,7 +38,7 @@ class TemporaryObjectController extends AbstractController
 	/**
 	 * OperationWatchDog.
 	 *
-	 * Watchdog for delaying expiration date of temporary objects linked to the provided temp id.
+	 * Watchdog for delaying expiration date of temporary objects linked to the provided temporary id.
 	 *
 	 * @return JsonPage
 	 */

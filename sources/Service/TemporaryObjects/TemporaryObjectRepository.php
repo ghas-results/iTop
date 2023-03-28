@@ -4,6 +4,17 @@
  * @license     http://opensource.org/licenses/AGPL-3.0
  */
 
+namespace Combodo\iTop\Service\TemporaryObjects;
+
+use CMDBSource;
+use DBObjectSet;
+use DBSearch;
+use ExceptionLog;
+use Expression;
+use IssueLog;
+use MetaModel;
+use TemporaryObjectDescriptor;
+
 /**
  * TemporaryObjectRepository.
  *
@@ -28,6 +39,14 @@ class TemporaryObjectRepository
 		}
 
 		return self::$oSingletonInstance;
+	}
+
+	/**
+	 * Constructor.
+	 *
+	 */
+	private function __construct()
+	{
 	}
 
 	/**

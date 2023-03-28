@@ -46,6 +46,7 @@ use Combodo\iTop\Renderer\Console\ConsoleBlockRenderer;
 use Combodo\iTop\Renderer\Console\ConsoleFormRenderer;
 use Combodo\iTop\Service\Links\LinkSetDataTransformer;
 use Combodo\iTop\Service\Links\LinkSetModel;
+use Combodo\iTop\Service\TemporaryObjects\TemporaryObjectHelper;
 
 
 define('OBJECT_PROPERTIES_TAB', 'ObjectProperties');

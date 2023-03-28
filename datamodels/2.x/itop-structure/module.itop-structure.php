@@ -22,14 +22,7 @@ SetupWebPage::AddModule(
 		//
 		'datamodel' => array(
 			'main.itop-structure.php',
-			'src/Controller/TemporaryObjectController.php',
 			'src/Model/TemporaryObjectDescriptor.php',
-			'src/Service/TemporaryObjectHelper.php',
-			'src/Service/TemporaryObjectManager.php',
-			'src/Service/TemporaryObjectRepository.php',
-			'src/Form/iTemporaryObjectFormValidator.php',
-			'src/Form/TemporaryObjectFormValidator.php',
-			'src/Form/TemporaryObjectExtKeyValidator.php',
 			'model.itop-structure.php',
 		),
 		'data.struct' => array(

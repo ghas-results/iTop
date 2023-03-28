@@ -4,7 +4,16 @@
  * @license     http://opensource.org/licenses/AGPL-3.0
  */
 
+namespace Combodo\iTop\Service\TemporaryObjects;
+
+use DBObject;
+use IssueLog;
+use ReflectionClass;
+
 /**
+ * TemporaryObjectFormValidator.
+ *
+ * Handle temporary objects linked to a form.
  *
  * @since 3.1
  */
@@ -69,7 +78,7 @@ class TemporaryObjectFormValidator
 			$sValidatorClass = $aElement['grouped_by_validator'];
 
 			// Get temporary object descriptors attached to validator
-			$oDbObjectSearch = $this->oTemporaryObjectRepository->SearchByTempIdAndValidatorClass($sFormTransactionId, $sValidatorClass);
+			$oDbObjectSearch = $this->oTemporaryObjectRepository->SearchByTempIdAndValidatorClass($sFormTransactionId, addslashes($sValidatorClass));
 
 			// Initialize validator
 			$oReflexionClass = new ReflectionClass($sValidatorClass);
