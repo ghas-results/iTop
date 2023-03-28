@@ -44,6 +44,10 @@ class TemporaryObjectDescriptor extends DBObject
 		MetaModel::Init_AddAttribute(new AttributeDateTime('creation_date', array('sql' => 'creation_date', 'is_null_allowed' => true, 'default_value' => '', 'allowed_values' => null, 'depends_on' => array(), 'always_load_in_tables' => false)));
 		MetaModel::Init_AddAttribute(new AttributeString('validator_class', array('sql' => 'validator_class', 'is_null_allowed' => true, 'default_value' => '', 'allowed_values' => null, 'depends_on' => array(), 'always_load_in_tables' => false)));
 		MetaModel::Init_AddAttribute(new AttributeString('metadata', array('sql' => 'metadata', 'is_null_allowed' => false, 'default_value' => '{}', 'allowed_values' => null, 'depends_on' => array(), 'always_load_in_tables' => false)));
+		MetaModel::Init_AddAttribute(new AttributeString('host_class', array('sql' => 'host_class', 'is_null_allowed' => true, 'default_value' => '', 'allowed_values' => null, 'depends_on' => array(), 'always_load_in_tables' => false)));
+		MetaModel::Init_AddAttribute(new AttributeObjectKey('host_id', array('class_attcode' => 'host_class', 'sql' => 'host_id', 'is_null_allowed' => true, 'allowed_values' => null, 'depends_on' => array(), 'always_load_in_tables' => false)));
+		MetaModel::Init_AddAttribute(new AttributeString('host_att_code', array('sql' => 'host_att_code', 'is_null_allowed' => true, 'default_value' => '', 'allowed_values' => null, 'depends_on' => array(), 'always_load_in_tables' => false)));
+		MetaModel::Init_AddAttribute(new AttributeEnum("operation", array("allowed_values" => new ValueSetEnum('create,delete'), "sql" => "operation", "default_value" => "create", "is_null_allowed" => true, "depends_on" => array())));
 
 		MetaModel::Init_SetZListItems('details', array(
 			0 => 'temp_id',

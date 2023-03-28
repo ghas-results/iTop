@@ -398,10 +398,12 @@ JS;
 					throw new CoreCannotSaveObjectException(array('id' => $oObj->GetKey(), 'class' => $sClass, 'issues' => $aErrors));
 				}
 
-				$oObj->DBInsertNoReload();// No need to reload
+				$oObj->DBInsertWithContext([
+					'finalize_temporary_objects' => [
+						'transaction_id' => $sTransactionId,
+					],
+				]);
 
-				// validate temporary objects
-				$this->oTemporaryObjectFormValidator->Validate($sTransactionId, $oObj);
 
 				IssueLog::Trace(__CLASS__.'::'.__METHOD__.' Object created', $sClass, array(
 					'$id'             => $oObj->GetKey(),
@@ -604,10 +606,12 @@ JS;
 						throw new CoreCannotSaveObjectException(array('id' => $oObj->GetKey(), 'class' => $sClass, 'issues' => $aErrors));
 					}
 					// Transactions are now handled in DBUpdate
-					$oObj->DBUpdate();
+					$oObj->DBUpdateWithContext([
+						'finalize_temporary_objects' => [
+							'transaction_id' => $sTransactionId,
+						],
+					]);
 
-					// validate temporary objects
-					$this->oTemporaryObjectFormValidator->Validate($sTransactionId, $oObj);
 
 					$sMessage = Dict::Format('UI:Class_Object_Updated', MetaModel::GetName(get_class($oObj)), $oObj->GetName());
 					$sSeverity = 'ok';
