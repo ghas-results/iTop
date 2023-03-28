@@ -1070,10 +1070,27 @@ JS
 			$oObj = MetaModel::NewObject($this->sTargetClass);
 			$aErrors = $oObj->UpdateObjectFromPostedForm($this->iId);
 			if (count($aErrors) == 0) {
-				$oObj->DBInsert();
+//				$sTransactionId = $aContext['create_temporary_object']['transaction_id'] ?? null;
+//				$sHostClass = $aContext['create_temporary_object']['host_class'] ?? null;
+//				$sHostAttCode = $aContext['create_temporary_object']['host_att_code'] ?? null;
+
+				// Retrieve JSON data
+				$sJSON = utils::ReadParam('json', '{}', false, utils::ENUM_SANITIZATION_FILTER_RAW_DATA);
+				$oJSON = json_decode($sJSON);
+
+//				// Retrieve attribute definition
+//				$oAttDef = MetaModel::GetAttributeDef($oJSON->m_sClass, $this->sAttCode);
+
+				$oObj->DBInsertWithContext([
+					'create_temporary_object' => [
+						'transaction_id' => utils::ReadParam('root_transaction_id', '', false, utils::ENUM_SANITIZATION_FILTER_TRANSACTION_ID),
+						'host_class'     => $oJSON->m_sClass,
+						'host_att_code'  => $this->sAttCode,
+					],
+				]);
 
 				// Handle temporary objects
-				$this->HandleTemporaryObject($oObj);
+//				$this->HandleTemporaryObject($oObj);
 
 				return array('name' => $oObj->GetName(), 'id' => $oObj->GetKey());
 			} else {

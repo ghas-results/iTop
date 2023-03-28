@@ -7,6 +7,7 @@
 use Combodo\iTop\Core\MetaModel\FriendlyNameType;
 use Combodo\iTop\Service\Events\EventData;
 use Combodo\iTop\Service\Events\EventService;
+use Combodo\iTop\Service\TemporaryObjects\TemporaryObjectManager;
 
 /**
  * All objects to be displayed in the application (either as a list or as details)
@@ -2961,18 +2962,36 @@ abstract class DBObject implements iDisplay
 	 */
 	public function DBInsertNoReload()
 	{
+		$this->DBInsertWithContext();
+	}
+
+	/**
+	 * @param $aContext array{}
+	 *
+	 *
+	 * @return bool|int|mixed|null
+	 * @throws \ArchivedObjectException
+	 * @throws \CoreCannotSaveObjectException
+	 * @throws \CoreException
+	 * @throws \CoreUnexpectedValue
+	 * @throws \CoreWarning
+	 * @throws \MySQLException
+	 * @throws \MySQLHasGoneAwayException
+	 * @throws \OQLException
+	 */
+	final public function DBInsertWithContext($aContext = [])
+	{
 		$sClass = get_class($this);
 
 		$this->AddCurrentObjectInCrudStack('INSERT');
 
 		try {
-	        if (MetaModel::DBIsReadOnly())
-	        {
-	            $sErrorMessage = "Cannot Insert object of class '$sClass' because of an ongoing maintenance: the database is in ReadOnly mode";
+			if (MetaModel::DBIsReadOnly()) {
+				$sErrorMessage = "Cannot Insert object of class '$sClass' because of an ongoing maintenance: the database is in ReadOnly mode";
 
-	            IssueLog::Error("$sErrorMessage\n".MyHelpers::get_callstack_text(1));
-	            throw new CoreException("$sErrorMessage (see the log for more information)");
-	        }
+				IssueLog::Error("$sErrorMessage\n".MyHelpers::get_callstack_text(1));
+				throw new CoreException("$sErrorMessage (see the log for more information)");
+			}
 
 			if ($this->m_bIsInDB) {
 				throw new CoreException('The object already exists into the Database, you may want to use the clone function');
@@ -3042,6 +3061,8 @@ abstract class DBObject implements iDisplay
 
 					$this->DBWriteLinks();
 					$this->WriteExternalAttributes();
+
+					$this->HandleTemporaryDescriptor($aContext);
 
 					// Write object creation history within the transaction
 					$this->RecordObjCreation();
@@ -3150,8 +3171,8 @@ abstract class DBObject implements iDisplay
 	 * This function is automatically called after cloning an object with the "clone" PHP language construct
 	 * The purpose of this method is to reset the appropriate attributes of the object in
 	 * order to make sure that the newly cloned object is really distinct from its clone
-     *
-     * @internal
+	 *
+	 * @internal
 	 */
 	public function __clone()
 	{
@@ -3160,6 +3181,10 @@ abstract class DBObject implements iDisplay
 		$this->m_iKey = self::GetNextTempId(get_class($this));
 	}
 
+	public function DBUpdate()
+	{
+		$this->DBUpdateWithContext();
+	}
 
 	/**
 	 * Update an object in DB
@@ -3173,10 +3198,9 @@ abstract class DBObject implements iDisplay
 	 * @throws \CoreCannotSaveObjectException if CheckToWrite() returns issues
 	 * @throws \Exception
 	 */
-	public function DBUpdate()
+	final public function DBUpdateWithContext(array $aContext = [])
 	{
-		if (!$this->m_bIsInDB)
-		{
+		if (!$this->m_bIsInDB) {
 			throw new CoreException("DBUpdate: could not update a newly created object, please call DBInsert instead");
 		}
 		// Protect against reentrance (e.g. cascading the update of ticket logs)
@@ -3308,6 +3332,8 @@ abstract class DBObject implements iDisplay
 					}
 					$this->DBWriteLinks();
 					$this->WriteExternalAttributes();
+
+					$this->HandleTemporaryDescriptor($aContext);
 
 					if (count($aChanges) != 0) {
 						$this->RecordAttChanges($aChanges, $aOriginalValues);
@@ -6109,6 +6135,17 @@ abstract class DBObject implements iDisplay
 	final protected static function IsCrudStackEmpty(): bool
 	{
 		return count(self::$m_aCrudStack) === 0;
+	}
+
+	/**
+	 * @param $aContext
+	 *
+	 * @return void
+	 * @since 3.1.0
+	 */
+	private function HandleTemporaryDescriptor($aContext)
+	{
+		TemporaryObjectManager::GetInstance()->HandleTemporaryObjects($this, $aContext);
 	}
 }
 

@@ -67,6 +67,7 @@ class TemporaryObjectRepository
 			// Create a temporary object descriptor
 			/** @var \TemporaryObjectDescriptor $oTemporaryObjectDescriptor */
 			$oTemporaryObjectDescriptor = MetaModel::NewObject(TemporaryObjectDescriptor::class, [
+				'operation'       => 'create',
 				'temp_id'         => $sTempId,
 				'expiration_date' => time() + MetaModel::GetConfig()->Get(TemporaryObjectHelper::CONFIG_TEMP_LIFETIME),
 				'item_class'      => $sObjectClass,
@@ -92,6 +93,11 @@ class TemporaryObjectRepository
 
 			return null;
 		}
+	}
+
+	public function Delete(string $sTempId, string $sObjectClass, string $sObjectKey, string $sValidatorClass, array $aMetadata = []): ?TemporaryObjectDescriptor
+	{
+
 	}
 
 	/**
