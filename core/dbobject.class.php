@@ -169,22 +169,25 @@ abstract class DBObject implements iDisplay
 	 */
 	protected static array $m_aCrudStack = [];
 
+	/** @var array Context for update insert operations */
+	private array $aContext = [];
+
 	/**
-     * DBObject constructor.
-     *
-     * You should preferably use MetaModel::NewObject() instead of this constructor.
-     * The whole collection of parameters is [*optional*] please refer to DBObjectSet::FromRow()
-     *
-     * @internal The availability of this method is not guaranteed in the long term, you should preferably use MetaModel::NewObject().
-     * @see MetaModel::NewObject()
-     *
-     * @param null|array   $aRow                If given : DBObjectSet::FromRow() will be used to fetch the object
-     * @param string       $sClassAlias
-     * @param null|array   $aAttToLoad
-     * @param null|array   $aExtendedDataSpec
-     *
-     * @throws CoreException
-     */
+	 * DBObject constructor.
+	 *
+	 * You should preferably use MetaModel::NewObject() instead of this constructor.
+	 * The whole collection of parameters is [*optional*] please refer to DBObjectSet::FromRow()
+	 *
+	 * @internal The availability of this method is not guaranteed in the long term, you should preferably use MetaModel::NewObject().
+	 * @see MetaModel::NewObject()
+	 *
+	 * @param null|array $aRow If given : DBObjectSet::FromRow() will be used to fetch the object
+	 * @param string $sClassAlias
+	 * @param null|array $aAttToLoad
+	 * @param null|array $aExtendedDataSpec
+	 *
+	 * @throws CoreException
+	 */
 	public function __construct($aRow = null, $sClassAlias = '', $aAttToLoad = null, $aExtendedDataSpec = null)
 	{
 		if (!empty($aRow))
@@ -2962,25 +2965,6 @@ abstract class DBObject implements iDisplay
 	 */
 	public function DBInsertNoReload()
 	{
-		$this->DBInsertWithContext();
-	}
-
-	/**
-	 * @param $aContext array{}
-	 *
-	 *
-	 * @return bool|int|mixed|null
-	 * @throws \ArchivedObjectException
-	 * @throws \CoreCannotSaveObjectException
-	 * @throws \CoreException
-	 * @throws \CoreUnexpectedValue
-	 * @throws \CoreWarning
-	 * @throws \MySQLException
-	 * @throws \MySQLHasGoneAwayException
-	 * @throws \OQLException
-	 */
-	final public function DBInsertWithContext($aContext = [])
-	{
 		$sClass = get_class($this);
 
 		$this->AddCurrentObjectInCrudStack('INSERT');
@@ -3062,7 +3046,7 @@ abstract class DBObject implements iDisplay
 					$this->DBWriteLinks();
 					$this->WriteExternalAttributes();
 
-					$this->HandleTemporaryDescriptor($aContext);
+					$this->HandleTemporaryDescriptor();
 
 					// Write object creation history within the transaction
 					$this->RecordObjCreation();
@@ -3181,11 +3165,6 @@ abstract class DBObject implements iDisplay
 		$this->m_iKey = self::GetNextTempId(get_class($this));
 	}
 
-	public function DBUpdate()
-	{
-		$this->DBUpdateWithContext();
-	}
-
 	/**
 	 * Update an object in DB
 	 *
@@ -3198,7 +3177,7 @@ abstract class DBObject implements iDisplay
 	 * @throws \CoreCannotSaveObjectException if CheckToWrite() returns issues
 	 * @throws \Exception
 	 */
-	final public function DBUpdateWithContext(array $aContext = [])
+	public function DBUpdate()
 	{
 		if (!$this->m_bIsInDB) {
 			throw new CoreException("DBUpdate: could not update a newly created object, please call DBInsert instead");
@@ -3333,7 +3312,7 @@ abstract class DBObject implements iDisplay
 					$this->DBWriteLinks();
 					$this->WriteExternalAttributes();
 
-					$this->HandleTemporaryDescriptor($aContext);
+					$this->HandleTemporaryDescriptor();
 
 					if (count($aChanges) != 0) {
 						$this->RecordAttChanges($aChanges, $aOriginalValues);
@@ -6143,9 +6122,55 @@ abstract class DBObject implements iDisplay
 	 * @return void
 	 * @since 3.1.0
 	 */
-	private function HandleTemporaryDescriptor($aContext)
+	private function HandleTemporaryDescriptor()
 	{
-		TemporaryObjectManager::GetInstance()->HandleTemporaryObjects($this, $aContext);
+		if ($this->HasContextSection('temporary_objects')) {
+			TemporaryObjectManager::GetInstance()->HandleTemporaryObjects($this, $this->GetContextSection('temporary_objects'));
+		}
+	}
+
+	/**
+	 * @return array
+	 */
+	public function GetContext(): array
+	{
+		return $this->aContext;
+	}
+
+	/**
+	 * Set context section data.
+	 *
+	 * @param string $sSection
+	 * @param $value
+	 *
+	 */
+	public function SetContextSection(string $sSection, $value)
+	{
+		$this->aContext[$sSection] = $value;
+	}
+
+	/**
+	 * @param string $sSection
+	 *
+	 * @return mixed
+	 */
+	public function GetContextSection(string $sSection)
+	{
+		if ($this->HasContextSection($sSection)) {
+			return $this->aContext[$sSection];
+		}
+
+		return null;
+	}
+
+	/**
+	 * @param string $sSection
+	 *
+	 * @return bool
+	 */
+	public function HasContextSection(string $sSection): bool
+	{
+		return array_key_exists($sSection, $this->aContext);
 	}
 }
 

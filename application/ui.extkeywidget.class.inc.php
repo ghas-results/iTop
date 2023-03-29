@@ -1081,13 +1081,14 @@ JS
 //				// Retrieve attribute definition
 //				$oAttDef = MetaModel::GetAttributeDef($oJSON->m_sClass, $this->sAttCode);
 
-				$oObj->DBInsertWithContext([
-					'create_temporary_object' => [
+				$oObj->SetContextSection('temporary_objects', [
+					'create' => [
 						'transaction_id' => utils::ReadParam('root_transaction_id', '', false, utils::ENUM_SANITIZATION_FILTER_TRANSACTION_ID),
 						'host_class'     => $oJSON->m_sClass,
 						'host_att_code'  => $this->sAttCode,
 					],
 				]);
+				$oObj->DBInsertNoReload();
 
 				// Handle temporary objects
 //				$this->HandleTemporaryObject($oObj);

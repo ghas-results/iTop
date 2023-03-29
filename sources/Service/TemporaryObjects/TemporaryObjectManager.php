@@ -241,7 +241,7 @@ class TemporaryObjectManager
 
 	public function FinalizeTemporaryObjects(DBObject $oDBObject, string $sTransactionId)
 	{
-		$oDBObjectSet = $this->oTemporaryObjectRepository->SearchByTempId($sTransactionId);
+		$oDBObjectSet = $this->oTemporaryObjectRepository->SearchByTempId($sTransactionId, true);
 
 		while ($oTemporaryObjectDescriptor = $oDBObjectSet->Fetch()) {
 
@@ -299,11 +299,11 @@ class TemporaryObjectManager
 
 	public function HandleTemporaryObjects(DBObject $oDBObject, array $aContext)
 	{
-		if (array_key_exists('create_temporary_object', $aContext)) {
+		if (array_key_exists('create', $aContext)) {
 
-			$sTransactionId = $aContext['create_temporary_object']['transaction_id'] ?? null;
-			$sHostClass = $aContext['create_temporary_object']['host_class'] ?? null;
-			$sHostAttCode = $aContext['create_temporary_object']['host_att_code'] ?? null;
+			$sTransactionId = $aContext['create']['transaction_id'] ?? null;
+			$sHostClass = $aContext['create']['host_class'] ?? null;
+			$sHostAttCode = $aContext['create']['host_att_code'] ?? null;
 
 			if (is_null($sTransactionId) || is_null($sHostClass) || is_null($sHostAttCode)) {
 				return;
@@ -322,9 +322,9 @@ class TemporaryObjectManager
 				$oTemporaryObjectManager->CreateTemporaryObject($sTransactionId, get_class($oDBObject), $oDBObject->GetKey(), TemporaryObjectExtKeyValidator::class);
 			}
 		}
-		if (array_key_exists('finalize_temporary_objects', $aContext)) {
+		if (array_key_exists('finalize', $aContext)) {
 
-			$sTransactionId = $aContext['finalize_temporary_objects']['transaction_id'] ?? null;
+			$sTransactionId = $aContext['finalize']['transaction_id'] ?? null;
 
 			// validate temporary objects
 			$this->FinalizeTemporaryObjects($oDBObject, $sTransactionId);

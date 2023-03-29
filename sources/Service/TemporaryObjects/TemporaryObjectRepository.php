@@ -9,6 +9,7 @@ namespace Combodo\iTop\Service\TemporaryObjects;
 use CMDBSource;
 use DBObjectSet;
 use DBSearch;
+use Exception;
 use ExceptionLog;
 use Expression;
 use IssueLog;
@@ -30,7 +31,7 @@ class TemporaryObjectRepository
 	/**
 	 * GetInstance.
 	 *
-	 * @return \TemporaryObjectRepository
+	 * @return TemporaryObjectRepository
 	 */
 	public static function GetInstance(): TemporaryObjectRepository
 	{
@@ -97,7 +98,7 @@ class TemporaryObjectRepository
 
 	public function Delete(string $sTempId, string $sObjectClass, string $sObjectKey, string $sValidatorClass, array $aMetadata = []): ?TemporaryObjectDescriptor
 	{
-
+		return null;
 	}
 
 	/**
@@ -113,13 +114,15 @@ class TemporaryObjectRepository
 	public function SearchByTempId(string $sTempId, bool $bReverseOrder = false): DBObjectSet
 	{
 		// Prepare OQL
-		$sOQL = sprintf('SELECT %s WHERE temp_id="%s"', TemporaryObjectDescriptor::class, $sTempId);
+		$sOQL = sprintf('SELECT `%s` WHERE temp_id=:temp_id', TemporaryObjectDescriptor::class);
 
 		// Create db search
 		$oDbObjectSearch = DBSearch::FromOQL($sOQL);
 
 		// Create db set from db search
-		$oDbObjectSet = new DBObjectSet($oDbObjectSearch);
+		$oDbObjectSet = new DBObjectSet($oDbObjectSearch, [], [
+			'temp_id' => $sTempId,
+		]);
 
 		// Reverse order
 		if ($bReverseOrder) {
@@ -144,16 +147,17 @@ class TemporaryObjectRepository
 		try {
 
 			// Prepare OQL
-			$sOQL = sprintf('SELECT %s WHERE temp_id="%s" AND validator_class="%s"',
-				TemporaryObjectDescriptor::class,
-				$sTempId,
-				$sValidatorClass);
+			$sOQL = sprintf('SELECT `%s` WHERE temp_id=:temp_id AND validator_class=:validator_class',
+				TemporaryObjectDescriptor::class);
 
 			// Create db search
 			$oDbObjectSearch = DBSearch::FromOQL($sOQL);
 
 			// Create db set from db search
-			return new DBObjectSet($oDbObjectSearch);
+			return new DBObjectSet($oDbObjectSearch, [], [
+				'temp_id'         => $sTempId,
+				'validator_class' => $sValidatorClass,
+			]);
 		}
 		catch (Exception $e) {
 
@@ -177,17 +181,18 @@ class TemporaryObjectRepository
 		try {
 
 			// Prepare OQL
-			$sOQL = sprintf('SELECT %s WHERE temp_id="%s" AND item_class="%s" AND item_id="%s"',
-				TemporaryObjectDescriptor::class,
-				$sTempId,
-				$sItemClass,
-				$sItemId);
+			$sOQL = sprintf('SELECT `%s` WHERE temp_id=:temp_id AND item_class=:item_class AND item_id=:item_id',
+				TemporaryObjectDescriptor::class);
 
 			// Create db search
 			$oDbObjectSearch = DBSearch::FromOQL($sOQL);
 
 			// Create db set from db search
-			return new DBObjectSet($oDbObjectSearch);
+			return new DBObjectSet($oDbObjectSearch, [], [
+				'temp_id'    => $sTempId,
+				'item_class' => $sItemClass,
+				'item_id'    => $sItemId,
+			]);
 		}
 		catch (Exception $e) {
 
@@ -209,14 +214,16 @@ class TemporaryObjectRepository
 	public function SearchTemporaryObjectDescriptionByTempIdGroupByValidator(string $sTempId): array
 	{
 		// Prepare OQL
-		$sOQL = sprintf('SELECT %s AS TMP WHERE temp_id="%s"', TemporaryObjectDescriptor::class, $sTempId);
+		$sOQL = sprintf('SELECT `%s` AS TMP WHERE temp_id=:temp_id', TemporaryObjectDescriptor::class);
 
 		// Create db search
 		$oDbObjectSearch = DBSearch::FromOQL($sOQL);
 
 		// Group by validator
 		$oFieldExp = Expression::FromOQL('TMP.validator_class');
-		$sQuery = $oDbObjectSearch->MakeGroupByQuery([], array('grouped_by_validator' => $oFieldExp), true,);
+		$sQuery = $oDbObjectSearch->MakeGroupByQuery([
+			'temp_id' => $sTempId,
+		], array('grouped_by_validator' => $oFieldExp), true,);
 
 		return CMDBSource::QueryToArray($sQuery, MYSQLI_ASSOC);
 	}
@@ -233,14 +240,7 @@ class TemporaryObjectRepository
 	{
 		try {
 
-			// Prepare OQL
-			$sOQL = sprintf('SELECT %s WHERE temp_id="%s"', TemporaryObjectDescriptor::class, $sTempId);
-
-			// Create db search
-			$oDbObjectSearch = DBSearch::FromOQL($sOQL);
-
-			// Create db set from db search
-			$oDbObjectSet = new DBObjectSet($oDbObjectSearch);
+			$oDbObjectSet = $this->SearchByTempId($sTempId);
 
 			// return operation success
 			return $oDbObjectSet->count();
