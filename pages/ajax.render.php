@@ -819,7 +819,7 @@ try
 
 				// Invalidate temporary objects
 				$oTemporaryObjectsManager = TemporaryObjectManager::GetInstance();
-				$oTemporaryObjectsManager->RefuseAllTemporaryObjects($iTransactionId);
+				$oTemporaryObjectsManager->CancelAllTemporaryObjects($iTransactionId);
 
 				IssueLog::Trace('on_form_cancel', $sObjClass, array(
 					'$iObjKey'        => $iObjKey,

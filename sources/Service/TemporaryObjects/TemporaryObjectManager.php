@@ -71,7 +71,7 @@ class TemporaryObjectManager
 	}
 
 	/**
-	 * RefuseAllTemporaryObjects.
+	 * CancelAllTemporaryObjects.
 	 *
 	 * Refuse the temporary objects descriptors attached to this temporary ID.
 	 * Delete the temporary objects.
@@ -80,15 +80,15 @@ class TemporaryObjectManager
 	 *
 	 * @return bool
 	 */
-	public function RefuseAllTemporaryObjects(string $sTempId): bool
+	public function CancelAllTemporaryObjects(string $sTempId): bool
 	{
 		try {
 
 			// Get temporary object descriptors
 			$oDbObjectSet = $this->oTemporaryObjectRepository->SearchByTempId($sTempId, true);
 
-			// Refuse temporary objects...
-			$this->RefuseTemporaryObjects($oDbObjectSet->ToArray());
+			// Cancel temporary objects...
+			$this->CancelTemporaryObjects($oDbObjectSet->ToArray());
 
 			// Log
 			IssueLog::Info("TemporaryObjectsManager: Invalidate all temporary objects attached to temporary id $sTempId", null, [
@@ -108,7 +108,7 @@ class TemporaryObjectManager
 	}
 
 	/**
-	 * RefuseTemporaryObjects.
+	 * CancelTemporaryObjects.
 	 *
 	 * Delete temporary object and his descriptor.
 	 *
@@ -116,7 +116,7 @@ class TemporaryObjectManager
 	 *
 	 * @return bool
 	 */
-	public function RefuseTemporaryObjects(array $aTemporaryObjectDescriptor): bool
+	public function CancelTemporaryObjects(array $aTemporaryObjectDescriptor): bool
 	{
 		try {
 
@@ -124,7 +124,7 @@ class TemporaryObjectManager
 			foreach ($aTemporaryObjectDescriptor as $oTemporaryObjectDescriptor) {
 
 				// Refuse the modifications
-				$this->RefuseTemporaryObject($oTemporaryObjectDescriptor);
+				$this->CancelTemporaryObject($oTemporaryObjectDescriptor);
 			}
 
 			return true;
@@ -241,14 +241,14 @@ class TemporaryObjectManager
 
 			// No host object
 			if ($oTemporaryObjectDescriptor->Get('host_id') === 0) {
-				$this->RefuseTemporaryObject($oTemporaryObjectDescriptor);
+				$this->CancelTemporaryObject($oTemporaryObjectDescriptor);
 				continue;
 			}
 
 			// Host object pointed by descriptor is non existent
 			$oHostObject = MetaModel::GetObject($oTemporaryObjectDescriptor->Get('host_class'), $oTemporaryObjectDescriptor->Get('host_id'), false);
 			if (is_null($oHostObject)) {
-				$this->RefuseTemporaryObject($oTemporaryObjectDescriptor);
+				$this->CancelTemporaryObject($oTemporaryObjectDescriptor);
 				continue;
 			}
 
@@ -275,7 +275,7 @@ class TemporaryObjectManager
 	}
 
 
-	public function RefuseTemporaryObject(DBObject $oTemporaryObjectDescriptor)
+	public function CancelTemporaryObject(DBObject $oTemporaryObjectDescriptor)
 	{
 		if ($oTemporaryObjectDescriptor->Get('operation') === 'create') {
 
