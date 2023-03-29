@@ -53,17 +53,18 @@ class TemporaryObjectRepository
 	 * @param string $sTempId Temporary id
 	 * @param string $sObjectClass Object class
 	 * @param string $sObjectKey Object key
+	 * @param string $sOperation temporary operation on file TemporaryObjectHelper::OPERATION_CREATE or TemporaryObjectHelper::OPERATION_DELETE
 	 *
 	 * @return TemporaryObjectDescriptor|null
 	 */
-	public function Create(string $sTempId, string $sObjectClass, string $sObjectKey): ?TemporaryObjectDescriptor
+	public function Create(string $sTempId, string $sObjectClass, string $sObjectKey, string $sOperation): ?TemporaryObjectDescriptor
 	{
 		try {
 
 			// Create a temporary object descriptor
 			/** @var \TemporaryObjectDescriptor $oTemporaryObjectDescriptor */
 			$oTemporaryObjectDescriptor = MetaModel::NewObject(TemporaryObjectDescriptor::class, [
-				'operation'       => 'create',
+				'operation'       => $sOperation,
 				'temp_id'         => $sTempId,
 				'expiration_date' => time() + MetaModel::GetConfig()->Get(TemporaryObjectHelper::CONFIG_TEMP_LIFETIME),
 				'item_class'      => $sObjectClass,
@@ -79,12 +80,6 @@ class TemporaryObjectRepository
 
 			return null;
 		}
-	}
-
-
-	public function Delete()
-	{
-
 	}
 
 	/**
