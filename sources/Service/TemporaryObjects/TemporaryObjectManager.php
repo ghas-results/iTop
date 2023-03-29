@@ -71,24 +71,24 @@ class TemporaryObjectManager
 	}
 
 	/**
-	 * DeleteAllTemporaryObjects.
+	 * RefuseAllTemporaryObjects.
 	 *
-	 * Remove the temporary objects descriptors attached to this temporary ID.
+	 * Refuse the temporary objects descriptors attached to this temporary ID.
 	 * Delete the temporary objects.
 	 *
 	 * @param string $sTempId
 	 *
 	 * @return bool
 	 */
-	public function DeleteAllTemporaryObjects(string $sTempId): bool
+	public function RefuseAllTemporaryObjects(string $sTempId): bool
 	{
 		try {
 
 			// Get temporary object descriptors
 			$oDbObjectSet = $this->oTemporaryObjectRepository->SearchByTempId($sTempId, true);
 
-			// Delete temporary objects...
-			$this->DeleteTemporaryObjects($oDbObjectSet->ToArray());
+			// Refuse temporary objects...
+			$this->RefuseTemporaryObjects($oDbObjectSet->ToArray());
 
 			// Log
 			IssueLog::Info("TemporaryObjectsManager: Invalidate all temporary objects attached to temporary id $sTempId", null, [
@@ -108,7 +108,7 @@ class TemporaryObjectManager
 	}
 
 	/**
-	 * DeleteTemporaryObjects.
+	 * RefuseTemporaryObjects.
 	 *
 	 * Delete temporary object and his descriptor.
 	 *
@@ -116,21 +116,15 @@ class TemporaryObjectManager
 	 *
 	 * @return bool
 	 */
-	public function DeleteTemporaryObjects(array $aTemporaryObjectDescriptor): bool
+	public function RefuseTemporaryObjects(array $aTemporaryObjectDescriptor): bool
 	{
 		try {
 
 			/** @var TemporaryObjectDescriptor $oTemporaryObjectDescriptor */
 			foreach ($aTemporaryObjectDescriptor as $oTemporaryObjectDescriptor) {
 
-				// Get temporary object
-				$oTemporaryObject = MetaModel::GetObject($oTemporaryObjectDescriptor->Get('item_class'), $oTemporaryObjectDescriptor->Get('item_id'));
-
-				// Delete temporary object
-				$oTemporaryObject->DBDelete();
-
-				// Remove temporary object descriptor entry
-				$oTemporaryObjectDescriptor->DBDelete();
+				// Refuse the modifications
+				$this->RefuseTemporaryObject($oTemporaryObjectDescriptor);
 			}
 
 			return true;

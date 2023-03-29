@@ -94,7 +94,7 @@ class TemporaryObjectFormValidator
 		}
 
 		// Delete descriptor and objects
-		$this->oTemporaryObjectManager->DeleteAllTemporaryObjects($sFormTransactionId);
+		$this->oTemporaryObjectManager->RefuseAllTemporaryObjects($sFormTransactionId);
 
 		// Log
 		IssueLog::Info("TemporaryObjectFormValidator: Validate form transaction id $sFormTransactionId", null, [
@@ -112,7 +112,7 @@ class TemporaryObjectFormValidator
 	 */
 	public function Invalidate(string $sTransactionId): bool
 	{
-		$this->oTemporaryObjectManager->DeleteAllTemporaryObjects($sTransactionId);
+		$this->oTemporaryObjectManager->RefuseAllTemporaryObjects($sTransactionId);
 
 		return true;
 	}
