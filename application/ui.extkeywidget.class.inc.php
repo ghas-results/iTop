@@ -7,9 +7,6 @@
 use Combodo\iTop\Application\UI\Base\Component\Form\FormUIBlockFactory;
 use Combodo\iTop\Application\UI\Base\Layout\UIContentBlockUIBlockFactory;
 use Combodo\iTop\Core\MetaModel\FriendlyNameType;
-use Combodo\iTop\Service\TemporaryObjects\TemporaryObjectExtKeyValidator;
-use Combodo\iTop\Service\TemporaryObjects\TemporaryObjectHelper;
-use Combodo\iTop\Service\TemporaryObjects\TemporaryObjectManager;
 
 require_once(APPROOT.'/application/displayblock.class.inc.php');
 
@@ -1070,16 +1067,10 @@ JS
 			$oObj = MetaModel::NewObject($this->sTargetClass);
 			$aErrors = $oObj->UpdateObjectFromPostedForm($this->iId);
 			if (count($aErrors) == 0) {
-//				$sTransactionId = $aContext['create_temporary_object']['transaction_id'] ?? null;
-//				$sHostClass = $aContext['create_temporary_object']['host_class'] ?? null;
-//				$sHostAttCode = $aContext['create_temporary_object']['host_att_code'] ?? null;
 
 				// Retrieve JSON data
 				$sJSON = utils::ReadParam('json', '{}', false, utils::ENUM_SANITIZATION_FILTER_RAW_DATA);
 				$oJSON = json_decode($sJSON);
-
-//				// Retrieve attribute definition
-//				$oAttDef = MetaModel::GetAttributeDef($oJSON->m_sClass, $this->sAttCode);
 
 				$oObj->SetContextSection('temporary_objects', [
 					'create' => [
@@ -1090,9 +1081,6 @@ JS
 				]);
 				$oObj->DBInsertNoReload();
 
-				// Handle temporary objects
-//				$this->HandleTemporaryObject($oObj);
-
 				return array('name' => $oObj->GetName(), 'id' => $oObj->GetKey());
 			} else {
 				return array('error' => implode(' ', $aErrors), 'id' => 0);
@@ -1100,37 +1088,6 @@ JS
 		}
 		catch (Exception $e) {
 			return array('error' => $e->getMessage(), 'id' => 0);
-		}
-	}
-
-	/**
-	 * HandleTemporaryObject.
-	 *
-	 * @param DBObject $oTargetObject
-	 *
-	 * @return void
-	 */
-	private function HandleTemporaryObject(DBObject $oTargetObject)
-	{
-		// Retrieve temporary object manager
-		$oTemporaryObjectManager = TemporaryObjectManager::GetInstance();
-
-		// Retrieve JSON data
-		$sJSON = utils::ReadParam('json', '{}', false, utils::ENUM_SANITIZATION_FILTER_RAW_DATA);
-		$oJSON = json_decode($sJSON);
-
-		// Retrieve attribute definition
-		$oAttDef = MetaModel::GetAttributeDef($oJSON->m_sClass, $this->sAttCode);
-
-		// If creation as temporary object requested or force for all objects
-		if (($oAttDef->IsParam('create_temporary_object') && $oAttDef->Get('create_temporary_object'))
-			|| MetaModel::GetConfig()->Get(TemporaryObjectHelper::CONFIG_FORCE)) {
-
-			// Retrieve root transaction id
-			$sRootTransactionId = utils::ReadParam('root_transaction_id', '', false, utils::ENUM_SANITIZATION_FILTER_TRANSACTION_ID);
-
-			// Create temporary object descriptor
-			$oTemporaryObjectManager->CreateTemporaryObject($sRootTransactionId, $this->sTargetClass, $oTargetObject->GetKey(), TemporaryObjectExtKeyValidator::class);
 		}
 	}
 

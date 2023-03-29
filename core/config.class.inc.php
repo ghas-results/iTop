@@ -161,7 +161,7 @@ class Config
 			'source_of_value'     => '',
 			'show_in_conf_sample' => false,
 		],
-		'external_keys.force_temporary_object_creation' => [
+		'temporary_object.force_creation' => [
 			'type'                => 'bool',
 			'description'         => 'If true, all the objects created by the external key are temporary',
 			'default'             => false,
@@ -169,7 +169,7 @@ class Config
 			'source_of_value'     => '',
 			'show_in_conf_sample' => false,
 		],
-		'external_keys.temporary_object_lifetime'       => [
+		'temporary_object.lifetime'       => [
 			'type'                => 'integer',
 			'description'         => 'Seconds for temporary objects created',
 			'default'             => 300,
@@ -177,7 +177,7 @@ class Config
 			'source_of_value'     => '',
 			'show_in_conf_sample' => false,
 		],
-		'external_keys.watchdog_interval'               => [
+		'temporary_object.watchdog_interval'            => [
 			'type'                => 'integer',
 			'description'         => 'Seconds between watchdog signals',
 			'default'             => 60,

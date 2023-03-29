@@ -817,8 +817,7 @@ try
 				}
 
 				// Invalidate temporary objects
-				$oTemporaryObjectsManager = TemporaryObjectManager::GetInstance();
-				$oTemporaryObjectsManager->CancelAllTemporaryObjects($iTransactionId);
+				TemporaryObjectManager::GetInstance()->CancelAllTemporaryObjects($iTransactionId);
 
 				IssueLog::Trace('on_form_cancel', $sObjClass, array(
 					'$iObjKey'        => $iObjKey,
@@ -2555,7 +2554,7 @@ EOF
 			/** @internal */
 			case 'object.modify':
 				$oController = new ObjectController();
-				$oPage = $oController->Modify();
+				$oPage = $oController->OperationModify();
 				break;
 
 			default:

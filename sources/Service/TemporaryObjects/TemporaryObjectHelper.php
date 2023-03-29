@@ -17,12 +17,17 @@ use MetaModel;
  */
 class TemporaryObjectHelper
 {
-    const CONFIG_FORCE = 'external_keys.force_temporary_object_creation';
-    const CONFIG_TEMP_LIFETIME = 'external_keys.temporary_object_lifetime';
-    const CONFIG_WATCHDOG_INTERVAL = 'external_keys.watchdog_interval';
+	// Global configuration
+    const CONFIG_FORCE             = 'temporary_object.force_creation';
+    const CONFIG_TEMP_LIFETIME     = 'temporary_object.lifetime';
+    const CONFIG_WATCHDOG_INTERVAL = 'temporary_object.watchdog_interval';
+
+	// Temporary descriptor operation
+	const OPERATION_CREATE         = 'create';
+	const OPERATION_DELETE         = 'delete';
 
 
-    /**
+	/**
      * GetWatchDogJS.
      *
      * @param string $sTempId
