@@ -17,7 +17,6 @@ use Combodo\iTop\Application\UI\Base\Component\QuickCreate\QuickCreateHelper;
 use Combodo\iTop\Application\UI\Base\Layout\PageContent\PageContentFactory;
 use Combodo\iTop\Controller\AbstractController;
 use Combodo\iTop\Service\Base\ObjectRepository;
-use Combodo\iTop\Service\TemporaryObjects\TemporaryObjectFormValidator;
 use CoreCannotSaveObjectException;
 use DeleteException;
 use Dict;
@@ -42,18 +41,6 @@ use utils;
 class ObjectController extends AbstractController
 {
 	public const ROUTE_NAMESPACE = 'object';
-
-	/** @var TemporaryObjectFormValidator $oTemporaryObjectFormValidator */
-	private TemporaryObjectFormValidator $oTemporaryObjectFormValidator;
-
-	/**
-	 * Constructor.
-	 *
-	 */
-	public function __construct()
-	{
-		$this->oTemporaryObjectFormValidator = TemporaryObjectFormValidator::GetInstance();
-	}
 
 	/**
 	 * @throws \CoreException
