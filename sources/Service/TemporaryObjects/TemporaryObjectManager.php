@@ -6,7 +6,6 @@
 
 namespace Combodo\iTop\Service\TemporaryObjects;
 
-use Combodo\iTop\Service\Base\ObjectRepository;
 use DateTime;
 use DBObject;
 use Exception;
@@ -58,23 +57,29 @@ class TemporaryObjectManager
 	 * CreateTemporaryObject.
 	 *
 	 * @param string $sTempId Temporary id context for the temporary object
-	 * @param string $sObjectClass Object class
-	 * @param string $sObjectKey Object key
-	 * @param string $sValidatorClass Validator class
-	 * @param array $aMetadata Optional meta data
+	 * @param string $sObjectClass Temporary object class
+	 * @param string $sObjectKey Temporary object key
 	 *
 	 * @return TemporaryObjectDescriptor|null
 	 */
-	public function CreateTemporaryObject(string $sTempId, string $sObjectClass, string $sObjectKey, string $sValidatorClass, array $aMetadata = []): ?TemporaryObjectDescriptor
+	public function CreateTemporaryObject(string $sTempId, string $sObjectClass, string $sObjectKey): ?TemporaryObjectDescriptor
 	{
-		return $this->oTemporaryObjectRepository->Create($sTempId, $sObjectClass, $sObjectKey, $sValidatorClass, $aMetadata);
+		$result = $this->oTemporaryObjectRepository->Create($sTempId, $sObjectClass, $sObjectKey);
+
+		// Log
+		IssueLog::Info("TemporaryObjectsManager: Create a temporary object attached to temporary id $sTempId", null, [
+			'temp_id'    => $sTempId,
+			'item_class' => $sObjectClass,
+			'item_id'    => $sObjectKey,
+			'succeeded'  => $result != null,
+		]);
+
+		return $result;
 	}
 
 	/**
 	 * CancelAllTemporaryObjects.
 	 *
-	 * Refuse the temporary objects descriptors attached to this temporary ID.
-	 * Delete the temporary objects.
 	 *
 	 * @param string $sTempId
 	 *
@@ -88,11 +93,12 @@ class TemporaryObjectManager
 			$oDbObjectSet = $this->oTemporaryObjectRepository->SearchByTempId($sTempId, true);
 
 			// Cancel temporary objects...
-			$this->CancelTemporaryObjects($oDbObjectSet->ToArray());
+			$bResult = $this->CancelTemporaryObjects($oDbObjectSet->ToArray());
 
 			// Log
-			IssueLog::Info("TemporaryObjectsManager: Invalidate all temporary objects attached to temporary id $sTempId", null, [
-				'temp_id' => $sTempId,
+			IssueLog::Info("TemporaryObjectsManager: Cancel all temporary objects attached to temporary id $sTempId", null, [
+				'temp_id'   => $sTempId,
+				'succeeded' => $bResult,
 			]);
 
 			// return operation success
@@ -110,24 +116,28 @@ class TemporaryObjectManager
 	/**
 	 * CancelTemporaryObjects.
 	 *
-	 * Delete temporary object and his descriptor.
 	 *
 	 * @param array $aTemporaryObjectDescriptor
 	 *
 	 * @return bool
 	 */
-	public function CancelTemporaryObjects(array $aTemporaryObjectDescriptor): bool
+	private function CancelTemporaryObjects(array $aTemporaryObjectDescriptor): bool
 	{
 		try {
+
+			// All operations succeeded
+			$bResult = true;
 
 			/** @var TemporaryObjectDescriptor $oTemporaryObjectDescriptor */
 			foreach ($aTemporaryObjectDescriptor as $oTemporaryObjectDescriptor) {
 
 				// Refuse the modifications
-				$this->CancelTemporaryObject($oTemporaryObjectDescriptor);
+				if (!$this->CancelTemporaryObject($oTemporaryObjectDescriptor)) {
+					$bResult = false;
+				}
 			}
 
-			return true;
+			return $bResult;
 		}
 		catch (Exception $e) {
 
@@ -138,26 +148,6 @@ class TemporaryObjectManager
 
 	}
 
-	/**
-	 * RemoveTemporaryObjectsDescriptors.
-	 *
-	 * @param string $sTempId
-	 *
-	 * @return bool
-	 */
-	private function RemoveTemporaryObjectsDescriptors(string $sTempId): bool
-	{
-		// Prepare OQL
-		$sOQL = sprintf('SELECT %s WHERE temp_id="%s"', TemporaryObjectDescriptor::class, $sTempId);
-
-		// Log
-		IssueLog::Info("TemporaryObjectsManager: Delete all temporary objects descriptors attached to temporary id $sTempId", null, [
-			'temp_id' => $sTempId,
-		]);
-
-		// Delete descriptors
-		return ObjectRepository::DeleteFromOql($sOQL);
-	}
 
 	/**
 	 * DelayTemporaryObjectsExpiration.
@@ -203,127 +193,196 @@ class TemporaryObjectManager
 	}
 
 	/**
-	 * @param array $aTemporaryObjectDescriptors
-	 * @param string $sClass
-	 * @param string $sKey
+	 * FinalizeTemporaryObjects.
 	 *
-	 * @return array
+	 * @param string $sTempId
+	 *
+	 * @return void
 	 * @throws \ArchivedObjectException
-	 * @throws \CoreCannotSaveObjectException
 	 * @throws \CoreException
 	 * @throws \CoreUnexpectedValue
-	 * @throws \DeleteException
 	 * @throws \MySQLException
-	 * @throws \MySQLHasGoneAwayException
 	 * @throws \OQLException
 	 */
-	public function RemoveTempObjectReference(array $aTemporaryObjectDescriptors, string $sClass, string $sKey): array
+	private function FinalizeTemporaryObjects(string $sTempId)
 	{
-		// Remove temp reference from array
-		return array_filter($aTemporaryObjectDescriptors, static function (TemporaryObjectDescriptor $element) use ($sClass, $sKey) {
-			// Matching entry
-			$bFound = $element->Get('item_class') === $sClass && $element->Get('item_id') == $sKey;
-			// Remove temp descriptor entry
-			if ($bFound) {
-				$element->DBDelete();
-			}
+		// All operations succeeded
+		$bResult = true;
 
-			return !$bFound;
-		});
-	}
+		// Get temporary object descriptors
+		$oDBObjectSet = $this->oTemporaryObjectRepository->SearchByTempId($sTempId, true);
 
-
-	public function FinalizeTemporaryObjects(DBObject $oDBObject, string $sTransactionId)
-	{
-		$oDBObjectSet = $this->oTemporaryObjectRepository->SearchByTempId($sTransactionId, true);
-
+		// Iterate throw descriptors...
 		while ($oTemporaryObjectDescriptor = $oDBObjectSet->Fetch()) {
 
+			// Retrieve attributes values
+			$sHostClass = $oTemporaryObjectDescriptor->Get('host_class');
+			$sHostId = $oTemporaryObjectDescriptor->Get('host_id');
+
 			// No host object
-			if ($oTemporaryObjectDescriptor->Get('host_id') === 0) {
-				$this->CancelTemporaryObject($oTemporaryObjectDescriptor);
+			if ($sHostId === 0) {
+				$bResult = $bResult && $this->CancelTemporaryObject($oTemporaryObjectDescriptor);
 				continue;
 			}
 
-			// Host object pointed by descriptor is non existent
-			$oHostObject = MetaModel::GetObject($oTemporaryObjectDescriptor->Get('host_class'), $oTemporaryObjectDescriptor->Get('host_id'), false);
+			// Host object pointed by descriptor doesn't exist
+			$oHostObject = MetaModel::GetObject($sHostClass, $sHostId, false);
 			if (is_null($oHostObject)) {
-				$this->CancelTemporaryObject($oTemporaryObjectDescriptor);
+				$bResult = $bResult && $this->CancelTemporaryObject($oTemporaryObjectDescriptor);
 				continue;
 			}
 
 			// Otherwise confirm
-			$this->ConfirmTemporaryObject($oTemporaryObjectDescriptor);
+			$bResult = $bResult && $this->ConfirmTemporaryObject($oTemporaryObjectDescriptor);
 		}
+
+		// Log
+		IssueLog::Info("TemporaryObjectsManager: Finalize all temporary objects attached to temporary id $sTempId", null, [
+			'temp_id'   => $sTempId,
+			'succeeded' => $bResult,
+		]);
+
 	}
 
-	public function ConfirmTemporaryObject(DBObject $oTemporaryObjectDescriptor)
+	/**
+	 * ConfirmTemporaryObject.
+	 *
+	 * @param \DBObject $oTemporaryObjectDescriptor
+	 *
+	 * @return bool
+	 */
+	private function ConfirmTemporaryObject(DBObject $oTemporaryObjectDescriptor): bool
 	{
-		if ($oTemporaryObjectDescriptor->Get('operation') === 'delete') {
+		try {
 
-			// Get temporary object
-			$oTemporaryObject = MetaModel::GetObject($oTemporaryObjectDescriptor->Get('item_class'), $oTemporaryObjectDescriptor->Get('item_id'));
+			// Retrieve attributes values
+			$sOperation = $oTemporaryObjectDescriptor->Get('operation');
+			$sItemClass = $oTemporaryObjectDescriptor->Get('item_class');
+			$sItemId = $oTemporaryObjectDescriptor->Get('item_id');
 
-			// Delete temporary object
-			$oTemporaryObject->DBDelete();
+			if ($sOperation === 'delete') {
 
+				// Get temporary object
+				$oTemporaryObject = MetaModel::GetObject($sItemClass, $sItemId);
+
+				// Delete temporary object
+				$oTemporaryObject->DBDelete();
+			}
+
+			// Remove temporary object descriptor entry
+			$oTemporaryObjectDescriptor->DBDelete();
+
+			// Log
+			IssueLog::Info("TemporaryObjectsManager: Confirm temporary object attached", null, [
+				'operation'  => $sOperation,
+				'item_class' => $sItemClass,
+				'item_id'    => $sItemId,
+			]);
+
+			return true;
 		}
+		catch (Exception $e) {
 
+			ExceptionLog::LogException($e);
 
-		// Remove temporary object descriptor entry
-		$oTemporaryObjectDescriptor->DBDelete();
+			return false;
+		}
 	}
 
-
-	public function CancelTemporaryObject(DBObject $oTemporaryObjectDescriptor)
+	/**
+	 * CancelTemporaryObject.
+	 *
+	 * @param \DBObject $oTemporaryObjectDescriptor
+	 *
+	 * @return bool
+	 */
+	private function CancelTemporaryObject(DBObject $oTemporaryObjectDescriptor): bool
 	{
-		if ($oTemporaryObjectDescriptor->Get('operation') === 'create') {
+		try {
 
-			// Get temporary object
-			$oTemporaryObject = MetaModel::GetObject($oTemporaryObjectDescriptor->Get('item_class'), $oTemporaryObjectDescriptor->Get('item_id'));
+			// Retrieve attributes values
+			$sOperation = $oTemporaryObjectDescriptor->Get('operation');
+			$sItemClass = $oTemporaryObjectDescriptor->Get('item_class');
+			$sItemId = $oTemporaryObjectDescriptor->Get('item_id');
 
-			// Delete temporary object
-			$oTemporaryObject->DBDelete();
+			if ($sOperation === 'create') {
 
+				// Get temporary object
+				$oTemporaryObject = MetaModel::GetObject($sItemClass, $sItemId);
+
+				// Delete temporary object
+				$oTemporaryObject->DBDelete();
+			}
+
+			// Remove temporary object descriptor entry
+			$oTemporaryObjectDescriptor->DBDelete();
+
+			return true;
 		}
+		catch (Exception $e) {
 
-		// Remove temporary object descriptor entry
-		$oTemporaryObjectDescriptor->DBDelete();
+			ExceptionLog::LogException($e);
+
+			return false;
+		}
 	}
 
+	/**
+	 * Handle temporary objects.
+	 *
+	 * @param \DBObject $oDBObject
+	 * @param array $aContext
+	 *
+	 * @return void
+	 * @throws \ArchivedObjectException
+	 * @throws \CoreException
+	 * @throws \CoreUnexpectedValue
+	 * @throws \MySQLException
+	 * @throws \OQLException
+	 */
 	public function HandleTemporaryObjects(DBObject $oDBObject, array $aContext)
 	{
 		if (array_key_exists('create', $aContext)) {
 
-			$sTransactionId = $aContext['create']['transaction_id'] ?? null;
-			$sHostClass = $aContext['create']['host_class'] ?? null;
-			$sHostAttCode = $aContext['create']['host_att_code'] ?? null;
+			// Retrieve context information
+			$aContextCreation = $aContext['create'];
+			$sTransactionId = $aContextCreation['transaction_id'] ?? null;
+			$sHostClass = $aContextCreation['host_class'] ?? null;
+			$sHostAttCode = $aContextCreation['host_att_code'] ?? null;
 
+			// Security
 			if (is_null($sTransactionId) || is_null($sHostClass) || is_null($sHostAttCode)) {
 				return;
 			}
 
-			$oAttDef = MetaModel::GetAttributeDef($sHostClass, $sHostAttCode);
+			// Get host class
+			try {
+				$oAttDef = MetaModel::GetAttributeDef($sHostClass, $sHostAttCode);
+			}
+			catch (Exception $e) {
+				ExceptionLog::LogException($e);
+
+				return;
+			}
 
 			// If creation as temporary object requested or force for all objects
 			if (($oAttDef->IsParam('create_temporary_object') && $oAttDef->Get('create_temporary_object'))
 				|| MetaModel::GetConfig()->Get(TemporaryObjectHelper::CONFIG_FORCE)) {
 
-
 				// Retrieve temporary object manager
 				$oTemporaryObjectManager = TemporaryObjectManager::GetInstance();
-				$oHostAttDef = MetaModel::GetAttributeDef($sHostClass, $sHostAttCode);
-				$oTemporaryObjectManager->CreateTemporaryObject($sTransactionId, get_class($oDBObject), $oDBObject->GetKey(), TemporaryObjectExtKeyValidator::class);
+				$oTemporaryObjectManager->CreateTemporaryObject($sTransactionId, get_class($oDBObject), $oDBObject->GetKey());
 			}
 		}
 		if (array_key_exists('finalize', $aContext)) {
 
-			$sTransactionId = $aContext['finalize']['transaction_id'] ?? null;
+			// Retrieve context information
+			$aContextFinalize = $aContext['finalize'];
+			$sTransactionId = $aContextFinalize['transaction_id'] ?? null;
 
 			// validate temporary objects
-			$this->FinalizeTemporaryObjects($oDBObject, $sTransactionId);
+			$this->FinalizeTemporaryObjects($sTransactionId);
 		}
-
 
 	}
 }

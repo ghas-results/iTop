@@ -56,12 +56,10 @@ class TemporaryObjectRepository
 	 * @param string $sTempId Temporary id
 	 * @param string $sObjectClass Object class
 	 * @param string $sObjectKey Object key
-	 * @param string $sValidatorClass Validator class
-	 * @param array $aMetadata Optional meta data
 	 *
 	 * @return TemporaryObjectDescriptor|null
 	 */
-	public function Create(string $sTempId, string $sObjectClass, string $sObjectKey, string $sValidatorClass, array $aMetadata = []): ?TemporaryObjectDescriptor
+	public function Create(string $sTempId, string $sObjectClass, string $sObjectKey): ?TemporaryObjectDescriptor
 	{
 		try {
 
@@ -73,18 +71,8 @@ class TemporaryObjectRepository
 				'expiration_date' => time() + MetaModel::GetConfig()->Get(TemporaryObjectHelper::CONFIG_TEMP_LIFETIME),
 				'item_class'      => $sObjectClass,
 				'item_id'         => $sObjectKey,
-				'validator_class' => $sValidatorClass,
-				'metadata'        => json_encode($aMetadata),
 			]);
 			$oTemporaryObjectDescriptor->DBInsert();
-
-			// Log
-			IssueLog::Info("TemporaryObjectsManager: Create a temporary object attached to transaction id $sTempId", null, [
-				'transaction_id'  => $sTempId,
-				'item_class'      => $sObjectClass,
-				'item_id'         => $sObjectKey,
-				'validator_class' => $sValidatorClass,
-			]);
 
 			return $oTemporaryObjectDescriptor;
 		}
@@ -96,9 +84,10 @@ class TemporaryObjectRepository
 		}
 	}
 
-	public function Delete(string $sTempId, string $sObjectClass, string $sObjectKey, string $sValidatorClass, array $aMetadata = []): ?TemporaryObjectDescriptor
+
+	public function Delete()
 	{
-		return null;
+
 	}
 
 	/**
@@ -133,101 +122,6 @@ class TemporaryObjectRepository
 
 		return $oDbObjectSet;
 	}
-
-	/**
-	 * SearchByTempIdAndValidatorClass.
-	 *
-	 * @param string $sTempId
-	 * @param string $sValidatorClass
-	 *
-	 * @return DBObjectSet|null
-	 */
-	public function SearchByTempIdAndValidatorClass(string $sTempId, string $sValidatorClass): ?DBObjectSet
-	{
-		try {
-
-			// Prepare OQL
-			$sOQL = sprintf('SELECT `%s` WHERE temp_id=:temp_id AND validator_class=:validator_class',
-				TemporaryObjectDescriptor::class);
-
-			// Create db search
-			$oDbObjectSearch = DBSearch::FromOQL($sOQL);
-
-			// Create db set from db search
-			return new DBObjectSet($oDbObjectSearch, [], [
-				'temp_id'         => $sTempId,
-				'validator_class' => $sValidatorClass,
-			]);
-		}
-		catch (Exception $e) {
-
-			ExceptionLog::LogException($e);
-
-			return null;
-		}
-	}
-
-	/**
-	 * SearchByTempIdAndItemClassAndItemId.
-	 *
-	 * @param string $sTempId
-	 * @param string $sItemClass
-	 * @param string $sItemId
-	 *
-	 * @return TemporaryObjectDescriptor|null
-	 */
-	public function SearchByTempIdAndItemClassAndItemId(string $sTempId, string $sItemClass, string $sItemId): ?TemporaryObjectDescriptor
-	{
-		try {
-
-			// Prepare OQL
-			$sOQL = sprintf('SELECT `%s` WHERE temp_id=:temp_id AND item_class=:item_class AND item_id=:item_id',
-				TemporaryObjectDescriptor::class);
-
-			// Create db search
-			$oDbObjectSearch = DBSearch::FromOQL($sOQL);
-
-			// Create db set from db search
-			return new DBObjectSet($oDbObjectSearch, [], [
-				'temp_id'    => $sTempId,
-				'item_class' => $sItemClass,
-				'item_id'    => $sItemId,
-			]);
-		}
-		catch (Exception $e) {
-
-			ExceptionLog::LogException($e);
-
-			return null;
-		}
-	}
-
-	/**
-	 * SearchTemporaryObjectDescriptionByTempIdGroupByValidator.
-	 *
-	 * @param string $sTempId
-	 *
-	 * @return array
-	 * @throws \MySQLException
-	 * @throws \OQLException
-	 */
-	public function SearchTemporaryObjectDescriptionByTempIdGroupByValidator(string $sTempId): array
-	{
-		// Prepare OQL
-		$sOQL = sprintf('SELECT `%s` AS TMP WHERE temp_id=:temp_id', TemporaryObjectDescriptor::class);
-
-		// Create db search
-		$oDbObjectSearch = DBSearch::FromOQL($sOQL);
-
-		// Group by validator
-		$oFieldExp = Expression::FromOQL('TMP.validator_class');
-		$sQuery = $oDbObjectSearch->MakeGroupByQuery([
-			'temp_id' => $sTempId,
-		], array('grouped_by_validator' => $oFieldExp), true,);
-
-		return CMDBSource::QueryToArray($sQuery, MYSQLI_ASSOC);
-	}
-
 
 	/**
 	 * CountTemporaryObjectsByTempId.
