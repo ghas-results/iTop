@@ -17,6 +17,7 @@ use Combodo\iTop\Renderer\Console\ConsoleBlockRenderer;
 use Combodo\iTop\Renderer\Console\ConsoleFormRenderer;
 use Combodo\iTop\Router\Router;
 use Combodo\iTop\Service\TemporaryObjects\TemporaryObjectFormValidator;
+use Combodo\iTop\Service\TemporaryObjects\TemporaryObjectManager;
 
 require_once('../approot.inc.php');
 
@@ -817,8 +818,8 @@ try
 				}
 
 				// Invalidate temporary objects
-				$oTemporaryObjectFormValidator = TemporaryObjectFormValidator::GetInstance();
-				$oTemporaryObjectFormValidator->Invalidate($iTransactionId);
+				$oTemporaryObjectsManager = TemporaryObjectManager::GetInstance();
+				$oTemporaryObjectsManager->RefuseAllTemporaryObjects($iTransactionId);
 
 				IssueLog::Trace('on_form_cancel', $sObjClass, array(
 					'$iObjKey'        => $iObjKey,
