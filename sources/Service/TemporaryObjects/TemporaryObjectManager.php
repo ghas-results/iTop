@@ -175,7 +175,7 @@ class TemporaryObjectManager
 			}
 
 			// Log
-			IssueLog::Info("TemporaryObjectsManager: Delay all temporary objects descriptors expiration date attached to temporary id $sTempId", null, [
+			IssueLog::Debug("TemporaryObjectsManager: Delay all temporary objects descriptors expiration date attached to temporary id $sTempId", null, [
 				'temp_id'                 => $sTempId,
 				'expiration_date'         => date_format($date, 'Y-m-d H:i:s'),
 				'total_temporary_objects' => $this->oTemporaryObjectRepository->CountTemporaryObjectsByTempId($sTempId),
@@ -273,7 +273,7 @@ class TemporaryObjectManager
 			$oTemporaryObjectDescriptor->DBDelete();
 
 			// Log
-			IssueLog::Info("TemporaryObjectsManager: Confirm temporary object attached", null, [
+			IssueLog::Debug("TemporaryObjectsManager: Confirm temporary object attached", null, [
 				'operation'  => $sOperation,
 				'item_class' => $sItemClass,
 				'item_id'    => $sItemId,

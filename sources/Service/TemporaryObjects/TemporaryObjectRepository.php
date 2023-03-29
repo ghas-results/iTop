@@ -6,13 +6,10 @@
 
 namespace Combodo\iTop\Service\TemporaryObjects;
 
-use CMDBSource;
 use DBObjectSet;
 use DBSearch;
 use Exception;
 use ExceptionLog;
-use Expression;
-use IssueLog;
 use MetaModel;
 use TemporaryObjectDescriptor;
 
