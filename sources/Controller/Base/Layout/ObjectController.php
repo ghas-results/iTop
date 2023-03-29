@@ -398,11 +398,13 @@ JS;
 					throw new CoreCannotSaveObjectException(array('id' => $oObj->GetKey(), 'class' => $sClass, 'issues' => $aErrors));
 				}
 
-				$oObj->DBInsertWithContext([
-					'finalize_temporary_objects' => [
+				// Transactions are now handled in DBInsert
+				$oObj->SetContextSection('temporary_objects', [
+					'finalize' => [
 						'transaction_id' => $sTransactionId,
 					],
 				]);
+				$oObj->DBInsertNoReload();
 
 
 				IssueLog::Trace(__CLASS__.'::'.__METHOD__.' Object created', $sClass, array(
@@ -605,13 +607,14 @@ JS;
 					if (!empty($aErrors)) {
 						throw new CoreCannotSaveObjectException(array('id' => $oObj->GetKey(), 'class' => $sClass, 'issues' => $aErrors));
 					}
+
 					// Transactions are now handled in DBUpdate
-					$oObj->DBUpdateWithContext([
-						'finalize_temporary_objects' => [
+					$oObj->SetContextSection('temporary_objects', [
+						'finalize' => [
 							'transaction_id' => $sTransactionId,
 						],
 					]);
-
+					$oObj->DBUpdate();
 
 					$sMessage = Dict::Format('UI:Class_Object_Updated', MetaModel::GetName(get_class($oObj)), $oObj->GetName());
 					$sSeverity = 'ok';
