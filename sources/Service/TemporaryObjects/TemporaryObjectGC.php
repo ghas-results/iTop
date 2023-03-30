@@ -10,13 +10,13 @@ use iBackgroundProcess;
 use MetaModel;
 
 /**
- * TemporaryObjectsGarbageCollector.
+ * TemporaryObjectGC.
  *
  * Background task to collect and garbage expired temporary objects..
  *
  * @since 3.1
  */
-class TemporaryObjectGarbageCollector implements iBackgroundProcess
+class TemporaryObjectGC implements iBackgroundProcess
 {
 	/** @var int Garbage collection interval */
 	private int $iGarbageInterval;
