@@ -21,6 +21,7 @@ class TemporaryObjectHelper
     const CONFIG_FORCE             = 'temporary_object.force_creation';
     const CONFIG_TEMP_LIFETIME     = 'temporary_object.lifetime';
     const CONFIG_WATCHDOG_INTERVAL = 'temporary_object.watchdog_interval';
+	const CONFIG_GARBAGE_INTERVAL  = 'temporary_object.garbage_interval';
 
 	// Temporary descriptor operation
 	const OPERATION_CREATE         = 'create';

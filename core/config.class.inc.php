@@ -161,7 +161,7 @@ class Config
 			'source_of_value'     => '',
 			'show_in_conf_sample' => false,
 		],
-		'temporary_object.force_creation' => [
+		'temporary_object.force_creation'    => [
 			'type'                => 'bool',
 			'description'         => 'If true, all the objects created by the external key are temporary',
 			'default'             => false,
@@ -169,7 +169,7 @@ class Config
 			'source_of_value'     => '',
 			'show_in_conf_sample' => false,
 		],
-		'temporary_object.lifetime'       => [
+		'temporary_object.lifetime'          => [
 			'type'                => 'integer',
 			'description'         => 'Seconds for temporary objects created',
 			'default'             => 300,
@@ -177,7 +177,7 @@ class Config
 			'source_of_value'     => '',
 			'show_in_conf_sample' => false,
 		],
-		'temporary_object.watchdog_interval'            => [
+		'temporary_object.watchdog_interval' => [
 			'type'                => 'integer',
 			'description'         => 'Seconds between watchdog signals',
 			'default'             => 60,
@@ -185,7 +185,15 @@ class Config
 			'source_of_value'     => '',
 			'show_in_conf_sample' => false,
 		],
-		'app_env_label'                                 => [
+		'temporary_object.garbage_interval'  => [
+			'type'                => 'integer',
+			'description'         => 'Seconds between garbage collections',
+			'default'             => 60,
+			'value'               => false,
+			'source_of_value'     => '',
+			'show_in_conf_sample' => false,
+		],
+		'app_env_label'                      => [
 			'type'                => 'string',
 			'description'         => 'Label displayed to describe the current application environment, defaults to the environment name (e.g. "production")',
 			'default'             => '',
@@ -193,7 +201,7 @@ class Config
 			'source_of_value'     => '',
 			'show_in_conf_sample' => false,
 		],
-		'app_root_url'                                  => [
+		'app_root_url'                       => [
 			'type'                => 'string',
 			'description'         => 'Root URL used for navigating within the application, or from an email to the application (you can put $SERVER_NAME$ as a placeholder for the server\'s name)',
 			'default'             => '',
@@ -201,7 +209,7 @@ class Config
 			'source_of_value'     => '',
 			'show_in_conf_sample' => true,
 		],
-		'app_icon_url'                                  => [
+		'app_icon_url'                       => [
 			'type'                => 'string',
 			'description'         => 'Hyperlink to redirect the user when clicking on the application icon (in the main window, or login/logoff pages)',
 			'default'             => 'http://www.combodo.com/itop',

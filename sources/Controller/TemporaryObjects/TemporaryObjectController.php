@@ -31,7 +31,7 @@ class TemporaryObjectController extends AbstractController
 	 */
 	public function __construct()
 	{
-		// Router service injection ???
+		// Retrieve controller dependencies
 		$this->oTemporaryObjectManager = TemporaryObjectManager::GetInstance();
 	}
 
@@ -50,10 +50,29 @@ class TemporaryObjectController extends AbstractController
 		$sTempId = utils::ReadParam('temp_id', '', false, utils::ENUM_SANITIZATION_FILTER_STRING);
 
 		// Delay temporary objects expiration
-		$this->oTemporaryObjectManager->DelayTemporaryObjectsExpiration($sTempId);
+		$bResult = $this->oTemporaryObjectManager->DelayTemporaryObjectsExpiration($sTempId);
 
 		return $oPage->SetData([
-			'success' => true,
+			'success' => $bResult,
+		]);
+	}
+
+	/**
+	 * OperationGarbage.
+	 *
+	 * Garbage temporary objects based on expiration date.
+	 *
+	 * @return JsonPage
+	 */
+	public function OperationGarbage(): JsonPage
+	{
+		$oPage = new JsonPage();
+
+		// Garbage expired temporary objects
+		$bResult = $this->oTemporaryObjectManager->GarbageExpiredTemporaryObjects();
+
+		return $oPage->SetData([
+			'success' => $bResult,
 		]);
 	}
 }
