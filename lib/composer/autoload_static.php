@@ -817,6 +817,7 @@ class ComposerStaticInit7f81b4a2a468a061c306af5e447a9a9f
         'Combodo\\iTop\\Service\\Links\\LinkSetModel' => __DIR__ . '/../..' . '/sources/Service/Links/LinkSetModel.php',
         'Combodo\\iTop\\Service\\Links\\LinkSetRepository' => __DIR__ . '/../..' . '/sources/Service/Links/LinkSetRepository.php',
         'Combodo\\iTop\\Service\\Links\\LinksBulkDataPostProcessor' => __DIR__ . '/../..' . '/sources/Service/Links/LinksBulkDataPostProcessor.php',
+        'Combodo\\iTop\\Service\\TemporaryObjects\\TemporaryObjectGarbageCollector' => __DIR__ . '/../..' . '/sources/Service/TemporaryObjects/TemporaryObjectGarbageCollector.php',
         'Combodo\\iTop\\Service\\TemporaryObjects\\TemporaryObjectHelper' => __DIR__ . '/../..' . '/sources/Service/TemporaryObjects/TemporaryObjectHelper.php',
         'Combodo\\iTop\\Service\\TemporaryObjects\\TemporaryObjectManager' => __DIR__ . '/../..' . '/sources/Service/TemporaryObjects/TemporaryObjectManager.php',
         'Combodo\\iTop\\Service\\TemporaryObjects\\TemporaryObjectRepository' => __DIR__ . '/../..' . '/sources/Service/TemporaryObjects/TemporaryObjectRepository.php',
