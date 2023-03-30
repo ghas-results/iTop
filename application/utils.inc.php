@@ -3416,4 +3416,16 @@ HTML;
 	{
 		return in_array($sTrait, self::TraitsUsedByClass($sClass, true));
 	}
+
+	public static function GetStackTraceAsArray(): array
+	{
+		$e = new Exception();
+		$aTrace = explode("\n", $e->getTraceAsString());
+		// Remove call to this method
+		array_shift($aTrace);
+		// Remove Main
+		array_pop($aTrace);
+
+		return $aTrace;
+	}
 }
