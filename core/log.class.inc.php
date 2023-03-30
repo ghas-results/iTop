@@ -605,6 +605,8 @@ class LogChannels
 	public const NOTIFICATIONS = 'notifications';
 
 	public const PORTAL       = 'portal';
+
+	public const TEMPORARY_OBJECTS = 'TemporaryObjects';
 }
 
 

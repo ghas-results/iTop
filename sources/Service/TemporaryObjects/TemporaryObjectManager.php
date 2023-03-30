@@ -11,8 +11,10 @@ use DBObject;
 use Exception;
 use ExceptionLog;
 use IssueLog;
+use LogChannels;
 use MetaModel;
 use TemporaryObjectDescriptor;
+use utils;
 
 /**
  * TemporaryObjectManager.
@@ -78,7 +80,7 @@ class TemporaryObjectManager
 		$result = $this->oTemporaryObjectRepository->Create($sTempId, $sObjectClass, $sObjectKey, $sOperation);
 
 		// Log
-		IssueLog::Info("TemporaryObjectsManager: Create a temporary object attached to temporary id $sTempId", null, [
+		IssueLog::Debug("TemporaryObjectsManager: Create a temporary object attached to temporary id $sTempId", LogChannels::TEMPORARY_OBJECTS, [
 			'temp_id'    => $sTempId,
 			'item_class' => $sObjectClass,
 			'item_id'    => $sObjectKey,
@@ -105,7 +107,7 @@ class TemporaryObjectManager
 			$bResult = $this->CancelTemporaryObjects($oDbObjectSet->ToArray());
 
 			// Log
-			IssueLog::Info("TemporaryObjectsManager: Cancel all temporary objects attached to temporary id $sTransactionId", null, [
+			IssueLog::Debug("TemporaryObjectsManager: Cancel all temporary objects attached to temporary id $sTransactionId", LogChannels::TEMPORARY_OBJECTS, [
 				'temp_id'   => $sTransactionId,
 				'succeeded' => $bResult,
 			]);
@@ -146,7 +148,6 @@ class TemporaryObjectManager
 			return $bResult;
 		}
 		catch (Exception $e) {
-
 			ExceptionLog::LogException($e);
 
 			return false;
@@ -180,7 +181,7 @@ class TemporaryObjectManager
 			// Log
 			$date = new DateTime();
 			$date->setTimestamp($iExpirationDate);
-			IssueLog::Debug("TemporaryObjectsManager: Delay all temporary objects descriptors expiration date attached to temporary id $sTransactionId", null, [
+			IssueLog::Debug("TemporaryObjectsManager: Delay all temporary objects descriptors expiration date attached to temporary id $sTransactionId", LogChannels::TEMPORARY_OBJECTS, [
 				'temp_id'                 => $sTransactionId,
 				'expiration_date'         => date_format($date, 'Y-m-d H:i:s'),
 				'total_temporary_objects' => $this->oTemporaryObjectRepository->CountTemporaryObjectsByTempId($sTransactionId),
@@ -219,7 +220,6 @@ class TemporaryObjectManager
 		// Iterate throw descriptors...
 		/** @var TemporaryObjectDescriptor $oTemporaryObjectDescriptor */
 		while ($oTemporaryObjectDescriptor = $oDBObjectSet->Fetch()) {
-
 			// Retrieve attributes values
 			$sHostClass = $oTemporaryObjectDescriptor->Get('host_class');
 			$sHostId = $oTemporaryObjectDescriptor->Get('host_id');
@@ -242,7 +242,7 @@ class TemporaryObjectManager
 		}
 
 		// Log
-		IssueLog::Info("TemporaryObjectsManager: Finalize all temporary objects attached to temporary id $sTransactionId", null, [
+		IssueLog::Debug("TemporaryObjectsManager: Finalize all temporary objects attached to temporary id $sTransactionId", LogChannels::TEMPORARY_OBJECTS, [
 			'temp_id'   => $sTransactionId,
 			'succeeded' => $bResult,
 		]);
@@ -259,7 +259,6 @@ class TemporaryObjectManager
 	private function ConfirmTemporaryObject(TemporaryObjectDescriptor $oTemporaryObjectDescriptor): bool
 	{
 		try {
-
 			// Retrieve attributes values
 			$sOperation = $oTemporaryObjectDescriptor->Get('operation');
 			$sItemClass = $oTemporaryObjectDescriptor->Get('item_class');
@@ -272,22 +271,18 @@ class TemporaryObjectManager
 
 				// Delete temporary object
 				$oTemporaryObject->DBDelete();
+				IssueLog::Info("Temporary Object [$sItemClass:$sItemId] removed (operation: $sOperation)", LogChannels::TEMPORARY_OBJECTS, utils::GetStackTraceAsArray());
 			}
 
 			// Remove temporary object descriptor entry
 			$oTemporaryObjectDescriptor->DBDelete();
 
 			// Log
-			IssueLog::Debug("TemporaryObjectsManager: Confirm temporary object attached", null, [
-				'operation'  => $sOperation,
-				'item_class' => $sItemClass,
-				'item_id'    => $sItemId,
-			]);
+			IssueLog::Debug("Temporary Object [$sItemClass:$sItemId] $sOperation confirmed", LogChannels::TEMPORARY_OBJECTS, utils::GetStackTraceAsArray());
 
 			return true;
 		}
 		catch (Exception $e) {
-
 			ExceptionLog::LogException($e);
 
 			return false;
@@ -304,7 +299,6 @@ class TemporaryObjectManager
 	private function CancelTemporaryObject(TemporaryObjectDescriptor $oTemporaryObjectDescriptor): bool
 	{
 		try {
-
 			// Retrieve attributes values
 			$sOperation = $oTemporaryObjectDescriptor->Get('operation');
 			$sItemClass = $oTemporaryObjectDescriptor->Get('item_class');
@@ -317,6 +311,8 @@ class TemporaryObjectManager
 
 				// Delete temporary object
 				$oTemporaryObject->DBDelete();
+
+				IssueLog::Info("Temporary Object [$sItemClass:$sItemId] removed (operation: $sOperation)", LogChannels::TEMPORARY_OBJECTS, utils::GetStackTraceAsArray());
 			}
 
 			// Remove temporary object descriptor entry
@@ -325,7 +321,6 @@ class TemporaryObjectManager
 			return true;
 		}
 		catch (Exception $e) {
-
 			ExceptionLog::LogException($e);
 
 			return false;
@@ -348,7 +343,6 @@ class TemporaryObjectManager
 	public function HandleTemporaryObjects(DBObject $oDBObject, array $aContext)
 	{
 		if (array_key_exists('create', $aContext)) {
-
 			// Retrieve context information
 			$aContextCreation = $aContext['create'];
 			$sTransactionId = $aContextCreation['transaction_id'] ?? null;
@@ -378,7 +372,6 @@ class TemporaryObjectManager
 			}
 		}
 		if (array_key_exists('finalize', $aContext)) {
-
 			// Retrieve context information
 			$aContextFinalize = $aContext['finalize'];
 			$sTransactionId = $aContextFinalize['transaction_id'] ?? null;
@@ -395,11 +388,7 @@ class TemporaryObjectManager
 	 */
 	public function GarbageExpiredTemporaryObjects(): bool
 	{
-		// Log
-		IssueLog::Debug("TemporaryObjectsManager: Garbage expired temporary objects");
-
 		try {
-
 			// Search for expired temporary objects
 			$oDBObjectSet = $this->oTemporaryObjectRepository->SearchByExpired();
 
@@ -409,7 +398,6 @@ class TemporaryObjectManager
 			return true;
 		}
 		catch (Exception $e) {
-
 			ExceptionLog::LogException($e);
 
 			return false;
