@@ -29,6 +29,12 @@ class TemporaryObjectManager
 	/** @var TemporaryObjectRepository $oTemporaryObjectRepository */
 	private TemporaryObjectRepository $oTemporaryObjectRepository;
 
+	/** @var int|mixed $iConfigTemporaryLifetime */
+	private int $iConfigTemporaryLifetime;
+
+	/** @var bool|mixed $bConfigTemporaryForce */
+	private int $bConfigTemporaryForce;
+
 	/**
 	 * GetInstance.
 	 *
@@ -49,7 +55,11 @@ class TemporaryObjectManager
 	 */
 	private function __construct()
 	{
-		// Initialize temporary object repository
+		// Retrieve service parameters
+		$this->iConfigTemporaryLifetime = MetaModel::GetConfig()->Get(TemporaryObjectHelper::CONFIG_TEMP_LIFETIME);
+		$this->bConfigTemporaryForce = MetaModel::GetConfig()->Get(TemporaryObjectHelper::CONFIG_FORCE);
+
+		// Retrieve service dependencies
 		$this->oTemporaryObjectRepository = TemporaryObjectRepository::GetInstance();
 	}
 
@@ -127,7 +137,7 @@ class TemporaryObjectManager
 			/** @var TemporaryObjectDescriptor $oTemporaryObjectDescriptor */
 			foreach ($aTemporaryObjectDescriptor as $oTemporaryObjectDescriptor) {
 
-				// Refuse the modifications
+				// Cancel temporary objects
 				if (!$this->CancelTemporaryObject($oTemporaryObjectDescriptor)) {
 					$bResult = false;
 				}
@@ -159,7 +169,7 @@ class TemporaryObjectManager
 			$oDbObjectSet = $this->oTemporaryObjectRepository->SearchByTempId($sTransactionId);
 
 			// Expiration date
-			$iExpirationDate = time() + MetaModel::GetConfig()->Get(TemporaryObjectHelper::CONFIG_TEMP_LIFETIME);
+			$iExpirationDate = time() + $this->iConfigTemporaryLifetime;
 
 			// Delay objects expiration
 			while ($oObject = $oDbObjectSet->Fetch()) {
@@ -362,7 +372,7 @@ class TemporaryObjectManager
 
 			// If creation as temporary object requested or force for all objects
 			if (($oAttDef->IsParam('create_temporary_object') && $oAttDef->Get('create_temporary_object'))
-				|| MetaModel::GetConfig()->Get(TemporaryObjectHelper::CONFIG_FORCE)) {
+				|| $this->bConfigTemporaryForce) {
 
 				TemporaryObjectManager::GetInstance()->CreateTemporaryObject($sTransactionId, get_class($oDBObject), $oDBObject->GetKey(), TemporaryObjectHelper::OPERATION_CREATE);
 			}
@@ -376,5 +386,34 @@ class TemporaryObjectManager
 			// validate temporary objects
 			$this->FinalizeTemporaryObjects($sTransactionId);
 		}
+	}
+
+	/**
+	 * GarbageExpiredTemporaryObjects.
+	 *
+	 * @return bool
+	 */
+	public function GarbageExpiredTemporaryObjects(): bool
+	{
+		// Log
+		IssueLog::Debug("TemporaryObjectsManager: Garbage expired temporary objects");
+
+		try {
+
+			// Search for expired temporary objects
+			$oDBObjectSet = $this->oTemporaryObjectRepository->SearchByExpired();
+
+			// Cancel temporary objects
+			$this->CancelTemporaryObjects($oDBObjectSet->ToArray());
+
+			return true;
+		}
+		catch (Exception $e) {
+
+			ExceptionLog::LogException($e);
+
+			return false;
+		}
+
 	}
 }

@@ -6,6 +6,7 @@
 
 namespace Combodo\iTop\Service\TemporaryObjects;
 
+use AttributeDateTime;
 use DBObjectSet;
 use DBSearch;
 use Exception;
@@ -24,6 +25,9 @@ class TemporaryObjectRepository
 {
 	/** @var TemporaryObjectRepository|null Singleton */
 	static private ?TemporaryObjectRepository $oSingletonInstance = null;
+
+	/** @var int|mixed $iConfigTemporaryLifetime */
+	private int $iConfigTemporaryLifetime;
 
 	/**
 	 * GetInstance.
@@ -45,6 +49,8 @@ class TemporaryObjectRepository
 	 */
 	private function __construct()
 	{
+		// Retrieve service parameters
+		$this->iConfigTemporaryLifetime = MetaModel::GetConfig()->Get(TemporaryObjectHelper::CONFIG_TEMP_LIFETIME);
 	}
 
 	/**
@@ -66,7 +72,7 @@ class TemporaryObjectRepository
 			$oTemporaryObjectDescriptor = MetaModel::NewObject(TemporaryObjectDescriptor::class, [
 				'operation'       => $sOperation,
 				'temp_id'         => $sTempId,
-				'expiration_date' => time() + MetaModel::GetConfig()->Get(TemporaryObjectHelper::CONFIG_TEMP_LIFETIME),
+				'expiration_date' => time() + $this->iConfigTemporaryLifetime,
 				'item_class'      => $sObjectClass,
 				'item_id'         => $sObjectKey,
 			]);
@@ -139,4 +145,23 @@ class TemporaryObjectRepository
 		}
 	}
 
+	/**
+	 * SearchByExpired.
+	 *
+	 * @return DBObjectSet
+	 * @throws \OQLException
+	 */
+	public function SearchByExpired(): DBObjectSet
+	{
+		// Prepare OQL
+		$sOQL = sprintf('SELECT `%s` WHERE expiration_date<:now', TemporaryObjectDescriptor::class);
+
+		// Create db search
+		$oDbObjectSearch = DBSearch::FromOQL($sOQL);
+
+		// Create db set from db search
+		$sDateNow = date(AttributeDateTime::GetSQLFormat(), time());
+
+		return new DBObjectSet($oDbObjectSearch, ['id' => false], ['now' => $sDateNow]);
+	}
 }
