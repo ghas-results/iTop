@@ -264,14 +264,16 @@ class TemporaryObjectManager
 			$sItemClass = $oTemporaryObjectDescriptor->Get('item_class');
 			$sItemId = $oTemporaryObjectDescriptor->Get('item_id');
 
+			// Get temporary object
+			$oTemporaryObject = MetaModel::GetObject($sItemClass, $sItemId);
+
 			if ($sOperation === TemporaryObjectHelper::OPERATION_DELETE) {
-
-				// Get temporary object
-				$oTemporaryObject = MetaModel::GetObject($sItemClass, $sItemId);
-
 				// Delete temporary object
 				$oTemporaryObject->DBDelete();
 				IssueLog::Info("Temporary Object [$sItemClass:$sItemId] removed (operation: $sOperation)", LogChannels::TEMPORARY_OBJECTS, utils::GetStackTraceAsArray());
+			} elseif ($sOperation === TemporaryObjectHelper::OPERATION_CREATE) {
+				// Send an event in case of creation confirmation
+				$oTemporaryObject->FireEvent(TemporaryObjectsEvents::TEMPORARY_OBJECT_EVENT_CONFIRM_CREATE);
 			}
 
 			// Remove temporary object descriptor entry
