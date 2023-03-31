@@ -2861,28 +2861,30 @@ JS
 
         if ($this->GetDisplayMode() === static::ENUM_DISPLAY_MODE_EDIT) {
             // The object already exists in the database, it's a modification
-            $oForm->AddSubBlock(InputUIBlockFactory::MakeForHidden('id', $iKey, "{$sPrefix}_id"));
+	        $oForm->AddSubBlock(InputUIBlockFactory::MakeForHidden('id', $iKey, "{$sPrefix}_id"));
         }
-        $oForm->AddSubBlock(InputUIBlockFactory::MakeForHidden('operation', $sOperation));
-        $oForm->AddSubBlock(InputUIBlockFactory::MakeForHidden('class', $sClass));
+		$oForm->AddSubBlock(InputUIBlockFactory::MakeForHidden('operation', $sOperation));
+		$oForm->AddSubBlock(InputUIBlockFactory::MakeForHidden('class', $sClass));
 
-        // Add transaction ID
-        $iTransactionId = isset($aExtraParams['transaction_id']) ? $aExtraParams['transaction_id'] : utils::GetNewTransactionId();
-        $oPage->SetTransactionId($iTransactionId);
-        $oForm->AddSubBlock(InputUIBlockFactory::MakeForHidden('transaction_id', $iTransactionId));
+		// Add transaction ID
+		$iTransactionId = isset($aExtraParams['transaction_id']) ? $aExtraParams['transaction_id'] : utils::GetNewTransactionId();
+		$oPage->SetTransactionId($iTransactionId);
+		$oForm->AddSubBlock(InputUIBlockFactory::MakeForHidden('transaction_id', $iTransactionId));
 
-        // Add temporary object watchdog
-        $oPage->add_ready_script(TemporaryObjectHelper::GetWatchDogJS($iTransactionId));
+		// Add temporary object watchdog (only on root form)
+		if (!utils::IsXmlHttpRequest()) {
+			$oPage->add_ready_script(TemporaryObjectHelper::GetWatchDogJS($iTransactionId));
+		}
 
-        // TODO 3.0.0: Is this (the if condition, not the code inside) still necessary?
-        if (isset($aExtraParams['wizard_container']) && $aExtraParams['wizard_container']) {
-            $sClassLabel = MetaModel::GetName($sClass);
-            if ($this->GetDisplayMode() == static::ENUM_DISPLAY_MODE_CREATE) {
-                $oPage->set_title(Dict::Format('UI:CreationPageTitle_Class', $sClassLabel)); // Set title will take care of the encoding
-            } else {
-                $oPage->set_title(Dict::Format('UI:ModificationPageTitle_Object_Class', $this->GetRawName(), $sClassLabel)); // Set title will take care of the encoding
-            }
-        }
+		// TODO 3.0.0: Is this (the if condition, not the code inside) still necessary?
+		if (isset($aExtraParams['wizard_container']) && $aExtraParams['wizard_container']) {
+			$sClassLabel = MetaModel::GetName($sClass);
+			if ($this->GetDisplayMode() == static::ENUM_DISPLAY_MODE_CREATE) {
+				$oPage->set_title(Dict::Format('UI:CreationPageTitle_Class', $sClassLabel)); // Set title will take care of the encoding
+			} else {
+				$oPage->set_title(Dict::Format('UI:ModificationPageTitle_Object_Class', $this->GetRawName(), $sClassLabel)); // Set title will take care of the encoding
+			}
+		}
 
         $oToolbarButtons = ToolbarUIBlockFactory::MakeStandard(null);
 
