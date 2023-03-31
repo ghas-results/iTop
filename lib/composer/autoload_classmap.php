@@ -456,6 +456,7 @@ return array(
     'Combodo\\iTop\\Service\\TemporaryObjects\\TemporaryObjectHelper' => $baseDir . '/sources/Service/TemporaryObjects/TemporaryObjectHelper.php',
     'Combodo\\iTop\\Service\\TemporaryObjects\\TemporaryObjectManager' => $baseDir . '/sources/Service/TemporaryObjects/TemporaryObjectManager.php',
     'Combodo\\iTop\\Service\\TemporaryObjects\\TemporaryObjectRepository' => $baseDir . '/sources/Service/TemporaryObjects/TemporaryObjectRepository.php',
+    'Combodo\\iTop\\Service\\TemporaryObjects\\TemporaryObjectsEvents' => $baseDir . '/sources/Service/TemporaryObjects/TemporaryObjectsEvents.php',
     'CompileCSSService' => $baseDir . '/application/compilecssservice.class.inc.php',
     'Composer\\InstalledVersions' => $vendorDir . '/composer/InstalledVersions.php',
     'Config' => $baseDir . '/core/config.class.inc.php',
