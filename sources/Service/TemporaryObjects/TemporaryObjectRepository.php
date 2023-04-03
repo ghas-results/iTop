@@ -26,9 +26,6 @@ class TemporaryObjectRepository
 	/** @var TemporaryObjectRepository|null Singleton */
 	static private ?TemporaryObjectRepository $oSingletonInstance = null;
 
-	/** @var int|mixed $iConfigTemporaryLifetime */
-	private int $iConfigTemporaryLifetime;
-
 	/**
 	 * GetInstance.
 	 *
@@ -49,8 +46,6 @@ class TemporaryObjectRepository
 	 */
 	private function __construct()
 	{
-		// Retrieve service parameters
-		$this->iConfigTemporaryLifetime = MetaModel::GetConfig()->Get(TemporaryObjectHelper::CONFIG_TEMP_LIFETIME);
 	}
 
 	/**
@@ -66,13 +61,19 @@ class TemporaryObjectRepository
 	public function Create(string $sTempId, string $sObjectClass, string $sObjectKey, string $sOperation): ?TemporaryObjectDescriptor
 	{
 		try {
+			if (!MetaModel::IsValidClass($sObjectClass)) {
+				throw new Exception("Class $sObjectClass is not a valid class");
+			}
+			if (MetaModel::GetObject($sObjectClass, $sObjectKey, false) === false) {
+				throw new Exception("Object $sObjectClass:$sObjectKey is not a valid object");
+			}
 
 			// Create a temporary object descriptor
 			/** @var \TemporaryObjectDescriptor $oTemporaryObjectDescriptor */
 			$oTemporaryObjectDescriptor = MetaModel::NewObject(TemporaryObjectDescriptor::class, [
 				'operation'       => $sOperation,
 				'temp_id'         => $sTempId,
-				'expiration_date' => time() + $this->iConfigTemporaryLifetime,
+				'expiration_date' => time() + TemporaryObjectConfig::GetInstance()->GetConfigTemporaryLifetime(),
 				'item_class'      => $sObjectClass,
 				'item_id'         => $sObjectKey,
 			]);

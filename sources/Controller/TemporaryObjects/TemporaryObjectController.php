@@ -50,7 +50,7 @@ class TemporaryObjectController extends AbstractController
 		$sTempId = utils::ReadParam('temp_id', '', false, utils::ENUM_SANITIZATION_FILTER_STRING);
 
 		// Delay temporary objects expiration
-		$bResult = $this->oTemporaryObjectManager->DelayTemporaryObjectsExpiration($sTempId);
+		$bResult = $this->oTemporaryObjectManager->ExtendTemporaryObjectsLifetime($sTempId);
 
 		return $oPage->SetData([
 			'success' => $bResult,
