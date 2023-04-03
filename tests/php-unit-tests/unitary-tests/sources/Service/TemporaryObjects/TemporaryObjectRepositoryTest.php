@@ -13,10 +13,15 @@ use Combodo\iTop\Service\TemporaryObjects\TemporaryObjectRepository;
 use Combodo\iTop\Test\UnitTest\ItopDataTestCase;
 use DBObject;
 
+/**
+ * @runTestsInSeparateProcesses
+ * @preserveGlobalState disabled
+ * @backupGlobals disabled
+ */
 class TemporaryObjectRepositoryTest extends ItopDataTestCase
 {
 	const USE_TRANSACTION = true;
-	const CREATE_TEST_ORG = true;
+	const CREATE_TEST_ORG = false;
 
 	private TemporaryObjectConfig $oTemporaryObjectConfig;
 
