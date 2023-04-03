@@ -452,6 +452,7 @@ return array(
     'Combodo\\iTop\\Service\\Links\\LinkSetModel' => $baseDir . '/sources/Service/Links/LinkSetModel.php',
     'Combodo\\iTop\\Service\\Links\\LinkSetRepository' => $baseDir . '/sources/Service/Links/LinkSetRepository.php',
     'Combodo\\iTop\\Service\\Links\\LinksBulkDataPostProcessor' => $baseDir . '/sources/Service/Links/LinksBulkDataPostProcessor.php',
+    'Combodo\\iTop\\Service\\TemporaryObjects\\TemporaryObjectConfig' => $baseDir . '/sources/Service/TemporaryObjects/TemporaryObjectConfig.php',
     'Combodo\\iTop\\Service\\TemporaryObjects\\TemporaryObjectGC' => $baseDir . '/sources/Service/TemporaryObjects/TemporaryObjectGC.php',
     'Combodo\\iTop\\Service\\TemporaryObjects\\TemporaryObjectHelper' => $baseDir . '/sources/Service/TemporaryObjects/TemporaryObjectHelper.php',
     'Combodo\\iTop\\Service\\TemporaryObjects\\TemporaryObjectManager' => $baseDir . '/sources/Service/TemporaryObjects/TemporaryObjectManager.php',

@@ -6,8 +6,6 @@
 
 namespace Combodo\iTop\Service\TemporaryObjects;
 
-use MetaModel;
-
 /**
  * TemporaryObjectHelper.
  *
@@ -18,32 +16,30 @@ use MetaModel;
 class TemporaryObjectHelper
 {
 	// Global configuration
-    const CONFIG_FORCE             = 'temporary_object.force_creation';
-    const CONFIG_TEMP_LIFETIME     = 'temporary_object.lifetime';
-    const CONFIG_WATCHDOG_INTERVAL = 'temporary_object.watchdog_interval';
+	const CONFIG_FORCE             = 'temporary_object.force_creation';
+	const CONFIG_TEMP_LIFETIME     = 'temporary_object.lifetime';
+	const CONFIG_WATCHDOG_INTERVAL = 'temporary_object.watchdog_interval';
 	const CONFIG_GARBAGE_INTERVAL  = 'temporary_object.garbage_interval';
 
 	// Temporary descriptor operation
-	const OPERATION_CREATE         = 'create';
-	const OPERATION_DELETE         = 'delete';
-
+	const OPERATION_CREATE = 'create';
+	const OPERATION_DELETE = 'delete';
 
 	/**
-     * GetWatchDogJS.
-     *
-     * @param string $sTempId
-     *
-     * @return string
-     */
-    static public function GetWatchDogJS(string $sTempId): string
-    {
-        $iWatchdogInterval = MetaModel::GetConfig()->Get(self::CONFIG_WATCHDOG_INTERVAL);
+	 * GetWatchDogJS.
+	 *
+	 * @param string $sTempId
+	 *
+	 * @return string
+	 */
+	static public function GetWatchDogJS(string $sTempId): string
+	{
+		$iWatchdogInterval = TemporaryObjectConfig::GetInstance()->GetWatchdogInterval();
 
-        return <<<JS
+		return <<<JS
 			window.setInterval(function() {
 				$.post(GetAbsoluteUrlAppRoot()+'pages/ajax.render.php?route=temporary_object.watch_dog', {temp_id: '$sTempId'});
 			}, $iWatchdogInterval * 1000)
 JS;
-    }
-
+	}
 }

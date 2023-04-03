@@ -31,12 +31,6 @@ class TemporaryObjectManager
 	/** @var TemporaryObjectRepository $oTemporaryObjectRepository */
 	private TemporaryObjectRepository $oTemporaryObjectRepository;
 
-	/** @var int|mixed $iConfigTemporaryLifetime */
-	private int $iConfigTemporaryLifetime;
-
-	/** @var bool|mixed $bConfigTemporaryForce */
-	private int $bConfigTemporaryForce;
-
 	/**
 	 * GetInstance.
 	 *
@@ -57,10 +51,6 @@ class TemporaryObjectManager
 	 */
 	private function __construct()
 	{
-		// Retrieve service parameters
-		$this->iConfigTemporaryLifetime = MetaModel::GetConfig()->Get(TemporaryObjectHelper::CONFIG_TEMP_LIFETIME);
-		$this->bConfigTemporaryForce = MetaModel::GetConfig()->Get(TemporaryObjectHelper::CONFIG_FORCE);
-
 		// Retrieve service dependencies
 		$this->oTemporaryObjectRepository = TemporaryObjectRepository::GetInstance();
 	}
@@ -126,7 +116,7 @@ class TemporaryObjectManager
 	/**
 	 * Cancel the ongoing operation (create or delete) on the given temporary objects
 	 *
-	 * @param array $aTemporaryObjectDescriptor
+	 * @param array{\TemporaryObjectDescriptor} $aTemporaryObjectDescriptor
 	 *
 	 * @return bool true if success
 	 */
@@ -163,14 +153,14 @@ class TemporaryObjectManager
 	 *
 	 * @return bool
 	 */
-	public function DelayTemporaryObjectsExpiration(string $sTransactionId): bool
+	public function ExtendTemporaryObjectsLifetime(string $sTransactionId): bool
 	{
 		try {
 			// Create db set from db search
 			$oDbObjectSet = $this->oTemporaryObjectRepository->SearchByTempId($sTransactionId);
 
 			// Expiration date
-			$iExpirationDate = time() + $this->iConfigTemporaryLifetime;
+			$iExpirationDate = time() + TemporaryObjectConfig::GetInstance()->GetConfigTemporaryLifetime();
 
 			// Delay objects expiration
 			while ($oObject = $oDbObjectSet->Fetch()) {
@@ -368,9 +358,9 @@ class TemporaryObjectManager
 
 			// If creation as temporary object requested or force for all objects
 			if (($oAttDef->IsParam('create_temporary_object') && $oAttDef->Get('create_temporary_object'))
-				|| $this->bConfigTemporaryForce) {
+				|| TemporaryObjectConfig::GetInstance()->GetConfigTemporaryForce()) {
 
-				TemporaryObjectManager::GetInstance()->CreateTemporaryObject($sTransactionId, get_class($oDBObject), $oDBObject->GetKey(), TemporaryObjectHelper::OPERATION_CREATE);
+				$this->CreateTemporaryObject($sTransactionId, get_class($oDBObject), $oDBObject->GetKey(), TemporaryObjectHelper::OPERATION_CREATE);
 			}
 		}
 		if (array_key_exists('finalize', $aContext)) {
@@ -404,6 +394,5 @@ class TemporaryObjectManager
 
 			return false;
 		}
-
 	}
 }

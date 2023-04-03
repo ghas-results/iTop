@@ -7,7 +7,6 @@
 namespace Combodo\iTop\Service\TemporaryObjects;
 
 use iBackgroundProcess;
-use MetaModel;
 
 /**
  * TemporaryObjectGC.
@@ -18,9 +17,6 @@ use MetaModel;
  */
 class TemporaryObjectGC implements iBackgroundProcess
 {
-	/** @var int Garbage collection interval */
-	private int $iGarbageInterval;
-
 	/** @var TemporaryObjectManager */
 	private TemporaryObjectManager $oTemporaryObjectManager;
 
@@ -30,9 +26,6 @@ class TemporaryObjectGC implements iBackgroundProcess
 	 */
 	public function __construct()
 	{
-		// Retrieve service configuration
-		$this->iGarbageInterval = MetaModel::GetConfig()->Get(TemporaryObjectHelper::CONFIG_GARBAGE_INTERVAL);
-
 		// Retrieve service dependencies
 		$this->oTemporaryObjectManager = TemporaryObjectManager::GetInstance();
 	}
@@ -40,7 +33,7 @@ class TemporaryObjectGC implements iBackgroundProcess
 	/** @inheritDoc * */
 	public function GetPeriodicity()
 	{
-		return $this->iGarbageInterval;
+		return TemporaryObjectConfig::GetInstance()->GetWatchdogInterval();
 	}
 
 	/** @inheritDoc * */
