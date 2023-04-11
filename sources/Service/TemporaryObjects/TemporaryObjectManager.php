@@ -299,10 +299,12 @@ class TemporaryObjectManager
 			if ($sOperation === TemporaryObjectHelper::OPERATION_CREATE) {
 
 				// Get temporary object
-				$oTemporaryObject = MetaModel::GetObject($sItemClass, $sItemId);
+				$oTemporaryObject = MetaModel::GetObject($sItemClass, $sItemId, false);
 
 				// Delete temporary object
-				$oTemporaryObject->DBDelete();
+				if (!is_null($oTemporaryObject)) {
+					$oTemporaryObject->DBDelete();
+				}
 
 				IssueLog::Info("Temporary Object [$sItemClass:$sItemId] removed (operation: $sOperation)", LogChannels::TEMPORARY_OBJECTS, utils::GetStackTraceAsArray());
 			}

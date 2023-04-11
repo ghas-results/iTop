@@ -123,6 +123,41 @@ class TemporaryObjectRepository
 	}
 
 	/**
+	 * SearchByItem.
+	 *
+	 * @param string $sItemClass
+	 * @param string $sItemId
+	 * @param bool $bReverseOrder reverse order of result
+	 *
+	 * @return \DBObjectSet
+	 * @throws \MySQLException
+	 * @throws \OQLException
+	 */
+	public function SearchByItem(string $sItemClass, string $sItemId, bool $bReverseOrder = false): DBObjectSet
+	{
+		// Prepare OQL
+		$sOQL = sprintf('SELECT `%s` WHERE item_class=:item_class AND item_id=:item_id', TemporaryObjectDescriptor::class);
+
+		// Create db search
+		$oDbObjectSearch = DBSearch::FromOQL($sOQL);
+
+		// Create db set from db search
+		$oDbObjectSet = new DBObjectSet($oDbObjectSearch, [], [
+			'item_class' => $sItemClass,
+			'item_id'    => $sItemId,
+		]);
+
+		// Reverse order
+		if ($bReverseOrder) {
+			$oDbObjectSet->SetOrderBy([
+				'id' => false,
+			]);
+		}
+
+		return $oDbObjectSet;
+	}
+
+	/**
 	 * CountTemporaryObjectsByTempId.
 	 *
 	 * @param string $sTempId
