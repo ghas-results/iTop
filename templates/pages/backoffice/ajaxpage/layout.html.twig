@@ -1,6 +1,7 @@
 {# @copyright   Copyright (C) 2010-2023 Combodo SARL #}
 {# @license     http://opensource.org/licenses/AGPL-3.0 #}
 {% apply spaceless %}
+    {% set sId = oLayout.GetId() | sanitize(constant('utils::ENUM_SANITIZATION_FILTER_VARIABLE_NAME')) %}
     {% if bEscapeContent %}
         {{ render_block(oLayout, {aPage: aPage})|escape }}
     {% else %}
@@ -17,29 +18,38 @@
     {% endblock %}
 
 	{% block iboPageJsInlineLive %}
-		{% for sJsInline in aPage.aJsInlineLive %}
-			{# We put each scripts in a dedicated script tag to prevent massive failure if 1 script is broken (eg. missing semi-colon or non closed multi-line comment) #}
-			<script type="text/javascript">
-				{{ sJsInline|raw }}
-			</script>
-		{% endfor %}
-		{% for sJsInline in aPage.aJsInlineOnInit %}
-			<script type="text/javascript">
-				{{ sJsInline|raw }}
-			</script>
-		{% endfor %}
+        <script type="text/javascript">
+            const fInlineLive{{ sId }} = function (){
+                {% for sJsInline in aPage.aJsInlineLive %}
+                    {{ sJsInline|raw }}
+                {% endfor %}
+            }
+        </script>
+        <script type="text/javascript">
+            const fInlineOnInit{{ sId }} = function (){
+                {% for sJsInline in aPage.aJsInlineOnInit %}
+                    {{ sJsInline|raw }}
+                {% endfor %}
+            }
+        </script>
+        <script type="text/javascript">
+            const fInlineOnDomReady{{ sId }} = function (){
+                {% for sJsInline in aPage.aJsInlineOnDomReady %}
+                    {{ sJsInline|raw }}
+                {% endfor %}
+            }
+        </script>
 	{% endblock %}
 
     {% set sPromiseId = aPage.sPromiseId %}
 	{% if aPage.aJsFiles is not empty %}
-        {% set sId = oLayout.GetId() | sanitize(constant('utils::ENUM_SANITIZATION_FILTER_VARIABLE_NAME')) %}
         {% block iboPageJsFiles %}
             <script type="text/javascript">
                 window['{{ sPromiseId }}'] = new Promise(function (resolve, reject) {
-                    let fInlineOnDomReadyScript{{ sId }} = function () {
-                        {% for sJsInlineOnDomReady in aPage.aJsInlineOnDomReady %}
-                            {{ sJsInlineOnDomReady|raw }}
-                        {% endfor %}
+                    let fOnJsFilesLoaded{{ sId }} = function () {
+                        fInlineLive{{ sId }}();
+                        fInlineOnInit{{ sId }}();
+                        fInlineOnDomReady{{ sId }}();
                         resolve();
                     }
 
@@ -117,7 +127,7 @@
                                 }
                                 else
                                 {
-                                    fInlineOnDomReadyScript{{ sId }}();
+                                    fOnJsFilesLoaded{{ sId }}();
                                 }
                             });
                         };
@@ -125,7 +135,7 @@
                     }
                     else
                     {
-                        fInlineOnDomReadyScript{{ sId }}();
+                        fOnJsFilesLoaded{{ sId }}();
                     }
                 });
             </script>
