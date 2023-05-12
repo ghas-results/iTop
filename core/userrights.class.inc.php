@@ -254,6 +254,10 @@ abstract class User extends cmdbAbstractObject
 	abstract public function TrustWebServerContext();
 	abstract public function CanChangePassword();
 	abstract public function ChangePassword($sOldPassword, $sNewPassword);
+	/**
+	 * @since 3.1 N°5324 - Avoid to have users with non-standalone power portal profile only
+	 */
+	abstract public function CheckProfiles() : bool;
 
 	/*
 	* Compute a name in best effort mode
@@ -990,6 +994,15 @@ class UserRights
 		{
 			return false;
 		}
+	}
+
+	/**
+	 * @since 3.1 N°5324
+	 * @return bool
+	 */
+	public static function CheckProfiles() : bool
+	{
+		return true;
 	}
 
 	/**

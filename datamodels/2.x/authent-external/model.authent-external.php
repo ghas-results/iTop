@@ -3,7 +3,7 @@
 //
 //   This file is part of iTop.
 //
-//   iTop is free software; you can redistribute it and/or modify	
+//   iTop is free software; you can redistribute it and/or modify
 //   it under the terms of the GNU Affero General Public License as published by
 //   the Free Software Foundation, either version 3 of the License, or
 //   (at your option) any later version.
@@ -89,6 +89,15 @@ class UserExternal extends User
 	{
 		// External authentication: iTop has no way to change a user's password
 		return false;
+	}
+
+	/**
+	 * @since 3.1 N°5324
+	 * @return bool
+	 */
+	public function CheckProfiles() : bool
+	{
+		return \UserRights::CheckProfiles();
 	}
 
 	public function ChangePassword($sOldPassword, $sNewPassword)

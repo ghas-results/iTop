@@ -527,4 +527,20 @@ class UserRightsTest extends ItopDataTestCase
 			'with Admins hidden' => [true, 0],
 		];
 	}
+
+	public function testPortalPowerUserConnect()
+	{
+		$_SESSION = [];
+		$oPowerPortalProfile = \MetaModel::GetObjectFromOQL("SELECT URP_Profiles WHERE name = :name", array('name' => 'Portal power user'), true);
+
+		$sLogin = 'testPortalPowerUserConnect-'.uniqid();
+		$oUser = $this->CreateContactlessUser($sLogin, $oPowerPortalProfile->GetKey());
+		UserRights::Login($sLogin);
+
+		$this->assertTrue(UserRights::IsPortalUser($oUser));
+		//$this->assertTrue(\UserRightsProfile::IsPortalUser($oUser));
+
+		// logout
+		$_SESSION = [];
+	}
 }
