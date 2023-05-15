@@ -713,7 +713,7 @@ abstract class UserInternal extends User
 	 */
 	public function CheckProfiles() : bool
 	{
-		return UserRights::CheckProfiles();
+		return \UserRights::CheckProfiles($this);
 	}
 }
 
@@ -1006,18 +1006,19 @@ class UserRights
 	}
 
 	/**
+	 * @param \User $oUser
 	 * @since 3.1 N°5324
 	 * @return bool
 	 */
-	public static function CheckProfiles() : bool
+	public static function CheckProfiles($oUser) : bool
 	{
-		if (!is_null(self::$m_oUser))
+		if (!is_null($oUser))
 		{
-			$oCurrentUserProfileSet = self::$m_oUser->Get('profile_list');
+			$oCurrentUserProfileSet = $oUser->Get('profile_list');
 			if ($oCurrentUserProfileSet->Count() === 1){
 				$oProfile = $oCurrentUserProfileSet->Fetch();
 
-				if (POWER_USER_PORTAL_PROFILE_NAME === $oProfile->Get('name')){
+				if (POWER_USER_PORTAL_PROFILE_NAME === $oProfile->Get('profile')){
 					//add portal user
 					// power portal user is not a standalone profile (it will break console UI)
 					$sOQL = sprintf("SELECT URP_Profiles WHERE name = '%s'", PORTAL_PROFILE_NAME);
@@ -1032,7 +1033,7 @@ class UserRights
 					$oUserProfile = new URP_UserProfile();
 					$oUserProfile->Set('profileid', $oUserPortalProfile->GetKey());
 					$oCurrentUserProfileSet->AddItem($oUserProfile);
-					self::$m_oUser->Set('profile_list', $oCurrentUserProfileSet);
+					$oUser->Set('profile_list', $oCurrentUserProfileSet);
 				}
 			}
 		}

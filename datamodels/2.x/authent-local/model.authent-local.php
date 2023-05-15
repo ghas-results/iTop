@@ -151,7 +151,7 @@ class UserLocal extends UserInternal
 	 */
 	public function CheckProfiles() : bool
 	{
-		return \UserRights::CheckProfiles();
+		return \UserRights::CheckProfiles($this);
 	}
 
 	public function ChangePassword($sOldPassword, $sNewPassword)
