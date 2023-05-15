@@ -36,7 +36,7 @@ class UserProfilesEventListener implements iEventServiceSetup
 		);
 
 		EventService::RegisterListener(
-			"EVENT_DB_LINKS_CHANGED",
+			"EVENT_DB_UPDATE_DONE",
 			$callback,
 			$aEventSource
 		);

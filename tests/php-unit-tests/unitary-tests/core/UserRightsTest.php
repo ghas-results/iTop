@@ -573,6 +573,21 @@ class UserRightsTest extends ItopDataTestCase
 	 * @since 3.1.0 N°5324
 	 * @dataProvider PortaPowerUserProvider
 	 */
+	public function testUserLocalUpdate($aAssociatedProfilesBeforeUserCreation,
+		$aExpectedAssociatedProfilesAfterUserCreation)
+	{
+		$oUser = \MetaModel::NewObject(\UserLocal::class);
+		$sLogin = 'testUserLocalUpdateWithPortalPowerUserProfile-'.uniqid();
+		$oUser->Set('login', $sLogin);
+		$oUser->Set('password', 'ABCD1234@gabuzomeu');
+		$oUser->Set('language', 'EN US');
+		$this->commonUserUpdate($oUser, $aAssociatedProfilesBeforeUserCreation, $aExpectedAssociatedProfilesAfterUserCreation);
+	}
+
+	/**
+	 * @since 3.1.0 N°5324
+	 * @dataProvider PortaPowerUserProvider
+	 */
 	public function testUserLDAPCreation($aAssociatedProfilesBeforeUserCreation,
 		$aExpectedAssociatedProfilesAfterUserCreation)
 	{
@@ -580,6 +595,19 @@ class UserRightsTest extends ItopDataTestCase
 		$sLogin = 'testUserLDAPCreationWithPortalPowerUserProfile-'.uniqid();
 		$oUser->Set('login', $sLogin);
 		$this->commonUserCreation($oUser, $aAssociatedProfilesBeforeUserCreation, $aExpectedAssociatedProfilesAfterUserCreation);
+	}
+
+	/**
+	 * @since 3.1.0 N°5324
+	 * @dataProvider PortaPowerUserProvider
+	 */
+	public function testUserLDAPUpdate($aAssociatedProfilesBeforeUserCreation,
+		$aExpectedAssociatedProfilesAfterUserCreation)
+	{
+		$oUser = \MetaModel::NewObject(\UserLDAP::class);
+		$sLogin = 'testUserLDAPUpdateWithPortalPowerUserProfile-'.uniqid();
+		$oUser->Set('login', $sLogin);
+		$this->commonUserUpdate($oUser, $aAssociatedProfilesBeforeUserCreation, $aExpectedAssociatedProfilesAfterUserCreation);
 	}
 
 	/**
@@ -597,8 +625,17 @@ class UserRightsTest extends ItopDataTestCase
 
 	/**
 	 * @since 3.1.0 N°5324
-	 * @dataProvider UserLocalCreationProvider
+	 * @dataProvider PortaPowerUserProvider
 	 */
+	public function testUserExternalUpdate($aAssociatedProfilesBeforeUserCreation,
+		$aExpectedAssociatedProfilesAfterUserCreation)
+	{
+		$oUser = \MetaModel::NewObject(\UserExternal::class);
+		$sLogin = 'testUserLDAPUpdateWithPortalPowerUserProfile-'.uniqid();
+		$oUser->Set('login', $sLogin);
+		$this->commonUserUpdate($oUser, $aAssociatedProfilesBeforeUserCreation, $aExpectedAssociatedProfilesAfterUserCreation);
+	}
+
 	public function commonUserCreation($oUserToCreate, $aAssociatedProfilesBeforeUserCreation,
 		$aExpectedAssociatedProfilesAfterUserCreation)
 	{
@@ -606,8 +643,8 @@ class UserRightsTest extends ItopDataTestCase
 
 		$aProfiles = [];
 		$oSearch = \DBSearch::FromOQL("SELECT URP_Profiles");
-		$oSet = new DBObjectSet($oSearch);
-		while (($oProfile = $oSet->Fetch()) != null){
+		$oProfileSet = new DBObjectSet($oSearch);
+		while (($oProfile = $oProfileSet->Fetch()) != null){
 			$aProfiles[$oProfile->Get('name')] = $oProfile;
 		}
 
@@ -618,22 +655,26 @@ class UserRightsTest extends ItopDataTestCase
 		$oUserToCreate->Set('contactid', $iContactid);
 		$sUserClass = get_class($oUserToCreate);
 
-		$oSet = $oUserToCreate->Get('profile_list');
+		$oUserProfileList = $oUserToCreate->Get('profile_list');
 		foreach ($aAssociatedProfilesBeforeUserCreation as $sProfileName){
 			$oUserProfile = new URP_UserProfile();
 			$oProfile = $aProfiles[$sProfileName];
 			$oUserProfile->Set('profileid', $oProfile->GetKey());
 			$oUserProfile->Set('reason', 'UNIT Tests');
-			$oSet->AddItem($oUserProfile);
+			$oUserProfileList->AddItem($oUserProfile);
 		}
 
-		$oUserToCreate->Set('profile_list', $oSet);
+		$oUserToCreate->Set('profile_list', $oUserProfileList);
 		$sId = $oUserToCreate->DBInsert();
 
+		$this->CheckProfilesAreOk($sUserClass, $sId, $aExpectedAssociatedProfilesAfterUserCreation);
+	}
+
+	public function CheckProfilesAreOk($sUserClass, $sId, $aExpectedAssociatedProfilesAfterUserCreation){
 		$oUser = \MetaModel::GetObject($sUserClass, $sId);
-		$oSet = $oUser->Get('profile_list');
+		$oUserProfileList = $oUser->Get('profile_list');
 		$aProfilesAfterCreation=[];
-		while (($oProfile = $oSet->Fetch()) != null){
+		while (($oProfile = $oUserProfileList->Fetch()) != null){
 			$aProfilesAfterCreation[] = $oProfile->Get('profile');
 		}
 
@@ -657,5 +698,53 @@ class UserRightsTest extends ItopDataTestCase
 		$this->assertTrue(true, 'after fix N°5324 no exception raised');
 		// logout
 		$_SESSION = [];
+	}
+
+	public function commonUserUpdate($oUserToCreate, $aAssociatedProfilesBeforeUserCreation,
+		$aExpectedAssociatedProfilesAfterUserCreation)
+	{
+		EventService::InitService();
+
+		$aProfiles = [];
+		$oSearch = \DBSearch::FromOQL("SELECT URP_Profiles");
+		$oProfileSet = new DBObjectSet($oSearch);
+		while (($oProfile = $oProfileSet->Fetch()) != null){
+			$aProfiles[$oProfile->Get('name')] = $oProfile;
+		}
+
+		$this->CreateTestOrganization();
+		$oContact = $this->CreatePerson("1");
+		$iContactid = $oContact->GetKey();
+
+		$oUserToCreate->Set('contactid', $iContactid);
+		$sUserClass = get_class($oUserToCreate);
+
+		$oAdminUrpProfile = new URP_UserProfile();
+		$oProfile = $aProfiles["Administrator"];
+		$iAdminProfileId = $oProfile->GetKey();
+		$oAdminUrpProfile->Set('profileid', $iAdminProfileId);
+		$oProfileList = $oUserToCreate->Get('profile_list');
+		$oProfileList->AddItem($oAdminUrpProfile);
+		$oUserToCreate->Set('profile_list', $oProfileList);
+		$sId = $oUserToCreate->DBInsert();
+
+		$oUserToUpdate = \MetaModel::GetObject($sUserClass, $sId);
+		$oProfileList = $oUserToUpdate->Get('profile_list');
+		while($oObj = $oProfileList->Fetch()){
+			$oProfileList->RemoveItem($oObj->GetKey());
+		}
+
+		foreach ($aAssociatedProfilesBeforeUserCreation as $sProfileName){
+			$oAdminUrpProfile = new URP_UserProfile();
+			$oProfile = $aProfiles[$sProfileName];
+			$oAdminUrpProfile->Set('profileid', $oProfile->GetKey());
+			$oAdminUrpProfile->Set('reason', 'UNIT Tests');
+			$oProfileList->AddItem($oAdminUrpProfile);
+		}
+
+		$oUserToUpdate->Set('profile_list', $oProfileList);
+		$oUserToUpdate->DBWrite();
+
+		$this->CheckProfilesAreOk($sUserClass, $sId, $aExpectedAssociatedProfilesAfterUserCreation);
 	}
 }
