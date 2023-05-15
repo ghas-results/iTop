@@ -26,6 +26,7 @@
 
 namespace Combodo\iTop\Test\UnitTest\Core;
 
+use Combodo\iTop\Application\UI\Base\Layout\NavigationMenu\NavigationMenuFactory;
 use Combodo\iTop\Test\UnitTest\ItopDataTestCase;
 use CoreCannotSaveObjectException;
 use CoreException;
@@ -528,18 +529,129 @@ class UserRightsTest extends ItopDataTestCase
 		];
 	}
 
-	public function testPortalPowerUserConnect()
+	public function PortaPowerUserProvider(){
+		return [
+			'Portal power user only => user should be repaired by adding User portal profile' => [
+				'aAssociatedProfilesBeforeUserCreation' => [
+					'Portal power user'
+				],
+				'aExpectedAssociatedProfilesAfterUserCreation'=> [
+					'Portal power user',
+					'Portal user',
+				]
+			],
+			'Portal power user + Support Agent => profiles untouched' => [
+				'aAssociatedProfilesBeforeUserCreation' => [
+					'Portal power user',
+					'Support Agent',
+				],
+				'aExpectedAssociatedProfilesAfterUserCreation'=> [
+					'Portal power user',
+					'Support Agent',
+				]
+			],
+		];
+	}
+
+	/**
+	 * @since 3.1.0 N°5324
+	 * @dataProvider PortaPowerUserProvider
+	 */
+	public function testUserLocalCreation($aAssociatedProfilesBeforeUserCreation,
+		$aExpectedAssociatedProfilesAfterUserCreation)
 	{
+		$oUser = \MetaModel::NewObject(\UserLocal::class);
+		$sLogin = 'testUserLocalCreationWithPortalPowerUserProfile-'.uniqid();
+		$oUser->Set('login', $sLogin);
+		$oUser->Set('password', 'ABCD1234@gabuzomeu');
+		$oUser->Set('language', 'EN US');
+		$this->commonUserCreation($oUser, $aAssociatedProfilesBeforeUserCreation, $aExpectedAssociatedProfilesAfterUserCreation);
+	}
+
+	/**
+	 * @since 3.1.0 N°5324
+	 * @dataProvider PortaPowerUserProvider
+	 */
+	public function testUserLDAPCreation($aAssociatedProfilesBeforeUserCreation,
+		$aExpectedAssociatedProfilesAfterUserCreation)
+	{
+		$oUser = \MetaModel::NewObject(\UserLDAP::class);
+		$sLogin = 'testUserLDAPCreationWithPortalPowerUserProfile-'.uniqid();
+		$oUser->Set('login', $sLogin);
+		$this->commonUserCreation($oUser, $aAssociatedProfilesBeforeUserCreation, $aExpectedAssociatedProfilesAfterUserCreation);
+	}
+
+	/**
+	 * @since 3.1.0 N°5324
+	 * @dataProvider PortaPowerUserProvider
+	 */
+	public function testUserExternalCreation($aAssociatedProfilesBeforeUserCreation,
+		$aExpectedAssociatedProfilesAfterUserCreation)
+	{
+		$oUser = \MetaModel::NewObject(\UserExternal::class);
+		$sLogin = 'testUserLDAPCreationWithPortalPowerUserProfile-'.uniqid();
+		$oUser->Set('login', $sLogin);
+		$this->commonUserCreation($oUser, $aAssociatedProfilesBeforeUserCreation, $aExpectedAssociatedProfilesAfterUserCreation);
+	}
+
+	/**
+	 * @since 3.1.0 N°5324
+	 * @dataProvider UserLocalCreationProvider
+	 */
+	public function commonUserCreation($oUserToCreate, $aAssociatedProfilesBeforeUserCreation,
+		$aExpectedAssociatedProfilesAfterUserCreation)
+	{
+		$aProfiles = [];
+		$oSearch = \DBSearch::FromOQL("SELECT URP_Profiles");
+		$oSet = new DBObjectSet($oSearch);
+		while (($oProfile = $oSet->Fetch()) != null){
+			$aProfiles[$oProfile->Get('name')] = $oProfile;
+		}
+
+		$this->CreateTestOrganization();
+		$oContact = $this->CreatePerson("1");
+		$iContactid = $oContact->GetKey();
+
+		$oUserToCreate->Set('contactid', $iContactid);
+		$sUserClass = get_class($oUserToCreate);
+
+		$oSet = $oUserToCreate->Get('profile_list');
+		foreach ($aAssociatedProfilesBeforeUserCreation as $sProfileName){
+			$oUserProfile = new URP_UserProfile();
+			$oProfile = $aProfiles[$sProfileName];
+			$oUserProfile->Set('profileid', $oProfile->GetKey());
+			$oUserProfile->Set('reason', 'UNIT Tests');
+			$oSet->AddItem($oUserProfile);
+		}
+
+		$oUserToCreate->Set('profile_list', $oSet);
+		$sId = $oUserToCreate->DBInsert();
+
+		$oUser = \MetaModel::GetObject($sUserClass, $sId);
+		$oSet = $oUser->Get('profile_list');
+		$aProfilesAfterCreation=[];
+		while (($oProfile = $oSet->Fetch()) != null){
+			$aProfilesAfterCreation[] = $oProfile->Get('profile');
+		}
+
+		foreach ($aExpectedAssociatedProfilesAfterUserCreation as $sExpectedProfileName){
+			$this->assertTrue(in_array($sExpectedProfileName, $aProfilesAfterCreation), "profile \'$sExpectedProfileName\' should be asociated to user after creation" );
+		}
+
 		$_SESSION = [];
-		$oPowerPortalProfile = \MetaModel::GetObjectFromOQL("SELECT URP_Profiles WHERE name = :name", array('name' => 'Portal power user'), true);
 
-		$sLogin = 'testPortalPowerUserConnect-'.uniqid();
-		$oUser = $this->CreateContactlessUser($sLogin, $oPowerPortalProfile->GetKey());
-		UserRights::Login($sLogin);
+		//$this->expectException(\Exception::class);
+		UserRights::Login($oUser->Get('login'));
 
-		$this->assertTrue(UserRights::IsPortalUser($oUser));
-		//$this->assertTrue(\UserRightsProfile::IsPortalUser($oUser));
+		if (! UserRights::IsPortalUser()) {
+			//calling this API triggers Fatal Error on below OQL used by \User->GetContactObject() for a user with only 'portal power user' profile
+			/**
+			 * Error: No result for the single row query: 'SELECT DISTINCT `Contact`.`id` AS `Contactid`, `Contact`.`name` AS `Contactname`, `Contact`.`status` AS `Contactstatus`, `Contact`.`org_id` AS `Contactorg_id`, `Organization_org_id`.`name` AS `Contactorg_name`, `Contact`.`email` AS `Contactemail`, `Contact`.`phone` AS `Contactphone`, `Contact`.`notify` AS `Contactnotify`, `Contact`.`function` AS `Contactfunction`, `Contact`.`finalclass` AS `Contactfinalclass`, IF((`Contact`.`finalclass` IN ('Team', 'Contact')), CAST(CONCAT(COALESCE(`Contact`.`name`, '')) AS CHAR), CAST(CONCAT(COALESCE(`Contact_poly_Person`.`first_name`, ''), COALESCE(' ', ''), COALESCE(`Contact`.`name`, '')) AS CHAR)) AS `Contactfriendlyname`, COALESCE((`Contact`.`status` = 'inactive'), 0) AS `Contactobsolescence_flag`, `Contact`.`obsolescence_date` AS `Contactobsolescence_date`, CAST(CONCAT(COALESCE(`Organization_org_id`.`name`, '')) AS CHAR) AS `Contactorg_id_friendlyname`, COALESCE((`Organization_org_id`.`status` = 'inactive'), 0) AS `Contactorg_id_obsolescence_flag` FROM `contact` AS `Contact` INNER JOIN `organization` AS `Organization_org_id` ON `Contact`.`org_id` = `Organization_org_id`.`id` LEFT JOIN `person` AS `Contact_poly_Person` ON `Contact`.`id` = `Contact_poly_Person`.`id` WHERE ((`Contact`.`id` = 40) AND 0) '.
+			 */
+			NavigationMenuFactory::MakeStandard();
+		}
 
+		$this->assertTrue(true, 'after fix N°5324 no exception raised');
 		// logout
 		$_SESSION = [];
 	}

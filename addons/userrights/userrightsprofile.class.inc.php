@@ -6,6 +6,7 @@
 
 define('ADMIN_PROFILE_NAME', 'Administrator');
 define('PORTAL_PROFILE_NAME', 'Portal user');
+define('POWER_USER_PORTAL_PROFILE_NAME', 'Portal power user');
 
 class UserRightsBaseClassGUI extends cmdbAbstractObject
 {

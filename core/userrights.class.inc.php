@@ -706,6 +706,15 @@ abstract class UserInternal extends User
 		$sRes = trim($oContact->Get($sEmailAttCode));
 		return $sRes;
 	}
+
+	/**
+	 * @since 3.1 N°5324
+	 * @return bool
+	 */
+	public function CheckProfiles() : bool
+	{
+		return UserRights::CheckProfiles();
+	}
 }
 
 /**
@@ -1002,6 +1011,31 @@ class UserRights
 	 */
 	public static function CheckProfiles() : bool
 	{
+		if (!is_null(self::$m_oUser))
+		{
+			$oCurrentUserProfileSet = self::$m_oUser->Get('profile_list');
+			if ($oCurrentUserProfileSet->Count() === 1){
+				$oProfile = $oCurrentUserProfileSet->Fetch();
+
+				if (POWER_USER_PORTAL_PROFILE_NAME === $oProfile->Get('name')){
+					//add portal user
+					// power portal user is not a standalone profile (it will break console UI)
+					$sOQL = sprintf("SELECT URP_Profiles WHERE name = '%s'", PORTAL_PROFILE_NAME);
+					$oSearch = \DBSearch::FromOQL($sOQL);
+					$oSearch->AllowAllData();
+					$oSet = new DBObjectSet($oSearch);
+					if ($oSet->Count() !==1){
+						return false;
+					}
+
+					$oUserPortalProfile = $oSet->Fetch();
+					$oUserProfile = new URP_UserProfile();
+					$oUserProfile->Set('profileid', $oUserPortalProfile->GetKey());
+					$oCurrentUserProfileSet->AddItem($oUserProfile);
+					self::$m_oUser->Set('profile_list', $oCurrentUserProfileSet);
+				}
+			}
+		}
 		return true;
 	}
 

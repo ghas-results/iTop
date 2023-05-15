@@ -26,10 +26,19 @@ class UserProfilesEventListener implements iEventServiceSetup
 	 */
 	public function RegisterEventsAndListeners()
 	{
+		$callback = [$this, 'OnUserProfileLinkChange'];
+		$aEventSource = [\User::class, \UserExternal::class, \UserInternal::class];
+
+		/*EventService::RegisterListener(
+			"EVENT_DB_CREATE_DONE",
+			$callback,
+			$aEventSource
+		);*/
+
 		EventService::RegisterListener(
-			EVENT_DB_LINKS_CHANGED,
-			[$this, 'OnUserProfileLinkChange'],
-			[ \User::class, \UserExternal::class, \UserInternal::class ]
+			"EVENT_DB_LINKS_CHANGED",
+			$callback,
+			$aEventSource
 		);
 	}
 
