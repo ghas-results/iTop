@@ -27,7 +27,6 @@
 namespace Combodo\iTop\Test\UnitTest\Core;
 
 use Combodo\iTop\Application\UI\Base\Layout\NavigationMenu\NavigationMenuFactory;
-use Combodo\iTop\Service\Events\EventService;
 use Combodo\iTop\Test\UnitTest\ItopDataTestCase;
 use CoreCannotSaveObjectException;
 use CoreException;
@@ -639,8 +638,6 @@ class UserRightsTest extends ItopDataTestCase
 	public function commonUserCreation($oUserToCreate, $aAssociatedProfilesBeforeUserCreation,
 		$aExpectedAssociatedProfilesAfterUserCreation)
 	{
-		EventService::InitService();
-
 		$aProfiles = [];
 		$oSearch = \DBSearch::FromOQL("SELECT URP_Profiles");
 		$oProfileSet = new DBObjectSet($oSearch);
@@ -703,8 +700,6 @@ class UserRightsTest extends ItopDataTestCase
 	public function commonUserUpdate($oUserToCreate, $aAssociatedProfilesBeforeUserCreation,
 		$aExpectedAssociatedProfilesAfterUserCreation)
 	{
-		EventService::InitService();
-
 		$aProfiles = [];
 		$oSearch = \DBSearch::FromOQL("SELECT URP_Profiles");
 		$oProfileSet = new DBObjectSet($oSearch);
