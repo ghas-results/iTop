@@ -257,7 +257,9 @@ class DataTableUIBlockFactory extends AbstractUIBlockFactory
 					}
 				}
 			}
-
+			if (array_key_exists('tooltip_row_data', $aAction)) {
+				$oButton->AddDataAttribute('tooltip-row-data', $aAction['tooltip_row_data']);
+			}
 			$oToolbar->AddSubBlock($oButton);
 		}
 

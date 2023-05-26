@@ -310,13 +310,13 @@ class BlockDirectLinkSetEditTable extends UIContentBlock
 			MetaModel::GetName($this->oAttributeLinkedSet->GetHostClass()),
 			$oHostObject->Get('friendlyname'),
 			$this->oAttributeLinkedSet->GetLabel(),
-			MetaModel::GetName($this->oUILinksDirectWidget->GetLinkedClass()));
+			MetaModel::GetName($this->oUILinksDirectWidget->GetLinkedClass()), '{item}');
 
 		$sRemoveButtonTooltip = $this->oAttributeLinkedSet->SearchSpecificLabel('UI:Links:Remove:Button+', '', true,
 			MetaModel::GetName($this->oAttributeLinkedSet->GetHostClass()),
 			$oHostObject->Get('friendlyname'),
 			$this->oAttributeLinkedSet->GetLabel(),
-			MetaModel::GetName($this->oUILinksDirectWidget->GetLinkedClass()));
+			MetaModel::GetName($this->oUILinksDirectWidget->GetLinkedClass()), '{item}');
 
 		// until a full link set refactoring (continue using edit_mode property)
 		switch ($this->oAttributeLinkedSet->GetEditMode()) {
@@ -330,10 +330,11 @@ class BlockDirectLinkSetEditTable extends UIContentBlock
 			case LINKSET_EDITMODE_ACTIONS: // Show the usual 'Actions' popup menu
 			if ($this->bIsAllowDelete) {
 				$aRowActions[] = array(
-					'label'         => 'UI:Links:Delete:Button',
-					'tooltip'       => $sDeleteButtonTooltip,
-					'icon_classes'  => 'fas fa-trash',
-					'js_row_action' => "$('#{$this->oUILinksDirectWidget->GetInputId()}').directlinks('Remove', $(':checkbox', oTrElement));",
+					'label'            => 'UI:Links:Delete:Button',
+					'tooltip'          => $sDeleteButtonTooltip,
+					'tooltip_row_data' => "{$this->oUILinksDirectWidget->GetLinkedClass()}/friendlyname",
+					'icon_classes'     => 'fas fa-trash',
+					'js_row_action'    => "$('#{$this->oUILinksDirectWidget->GetInputId()}').directlinks('Remove', $(':checkbox', oTrElement));",
 				);
 			}
 				break;
@@ -341,10 +342,11 @@ class BlockDirectLinkSetEditTable extends UIContentBlock
 			case LINKSET_EDITMODE_ADDREMOVE: // The whole linkset can be edited 'in-place'
 				if ($this->bIsAllowModify) {
 					$aRowActions[] = array(
-						'label'         => 'UI:Links:Remove:Button',
-						'tooltip'       => $sRemoveButtonTooltip,
-						'icon_classes'  => 'fas fa-minus',
-						'js_row_action' => "$('#{$this->oUILinksDirectWidget->GetInputId()}').directlinks('Remove', $(':checkbox', oTrElement));",
+						'label'            => 'UI:Links:Remove:Button',
+						'tooltip'          => $sRemoveButtonTooltip,
+						'tooltip_row_data' => "{$this->oUILinksDirectWidget->GetLinkedClass()}/friendlyname",
+						'icon_classes'     => 'fas fa-minus',
+						'js_row_action'    => "$('#{$this->oUILinksDirectWidget->GetInputId()}').directlinks('Remove', $(':checkbox', oTrElement));",
 					);
 				}
 				break;

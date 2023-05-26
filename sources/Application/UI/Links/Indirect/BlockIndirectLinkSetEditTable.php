@@ -495,14 +495,15 @@ JS
 			MetaModel::GetName($this->oAttributeLinkedSetIndirect->GetHostClass()),
 			$oHostObject->Get('friendlyname'),
 			$this->oAttributeLinkedSetIndirect->GetLabel(),
-			MetaModel::GetName($this->oUILinksWidget->GetRemoteClass()));
+			MetaModel::GetName($this->oUILinksWidget->GetRemoteClass()), '{item}');
 
 		if ($this->bIsAllowDelete) {
 			$aRowActions[] = array(
-				'label'         => 'UI:Links:Remove:Button',
-				'tooltip'       => $sRemoveButtonTooltip,
-				'icon_classes'  => 'fas fa-minus',
-				'js_row_action' => "oWidget{$this->oUILinksWidget->GetInputId()}.Remove(oTrElement);",
+				'label'            => 'UI:Links:Remove:Button',
+				'tooltip'          => $sRemoveButtonTooltip,
+				'tooltip_row_data' => 'Remote/friendlyname',
+				'icon_classes'     => 'fas fa-minus',
+				'js_row_action'    => "oWidget{$this->oUILinksWidget->GetInputId()}.Remove(oTrElement);",
 			);
 		}
 

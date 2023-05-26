@@ -27,6 +27,7 @@ trait tTableRowActions
 	 * action => {
 	 *      label: string,
 	 *      tooltip: string,
+	 *      tooltip_row_data: string,
 	 *      icon_classes: string,
 	 *      js_row_action: string,
 	 *      confirmation => {

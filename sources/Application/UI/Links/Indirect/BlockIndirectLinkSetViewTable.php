@@ -79,12 +79,13 @@ class BlockIndirectLinkSetViewTable extends AbstractBlockLinkSetViewTable
 
 		if ($this->bIsAllowModify) {
 			$aRowActions[] = array(
-				'label'         => 'UI:Links:ModifyLink:Button',
-				'name'          => 'ModifyButton',
-				'tooltip'       => $this->GetDictionaryEntry(static::DICT_MODIFY_LINK_BUTTON_TOOLTIP),
-				'icon_classes'  => 'fas fa-pen',
-				'js_row_action' => "{$this->GetWidgetName()}.links_view_table('ModifyLinkedObject', aRowData['Link/_key_/raw'], oTrElement, aRowData['Remote/friendlyname']);",
-				'metadata'      => [
+				'label'            => 'UI:Links:ModifyLink:Button',
+				'name'             => 'ModifyButton',
+				'tooltip'          => $this->GetDictionaryEntry(static::DICT_MODIFY_LINK_BUTTON_TOOLTIP),
+				'tooltip_row_data' => 'Remote/friendlyname',
+				'icon_classes'     => 'fas fa-pen',
+				'js_row_action'    => "{$this->GetWidgetName()}.links_view_table('ModifyLinkedObject', aRowData['Link/_key_/raw'], oTrElement, aRowData['Remote/friendlyname']);",
+				'metadata'         => [
 					'modal-title' => $this->GetDictionaryEntry(static::DICT_MODIFY_LINK_MODAL_TITLE),
 				],
 			);
@@ -92,12 +93,13 @@ class BlockIndirectLinkSetViewTable extends AbstractBlockLinkSetViewTable
 
 		if ($this->bIsAllowDelete) {
 			$aRowActions[] = array(
-				'label'         => 'UI:Links:Remove:Button',
-				'name'          => 'RemoveButton',
-				'tooltip'       => $this->GetDictionaryEntry(static::DICT_REMOVE_BUTTON_TOOLTIP),
-				'icon_classes'  => 'fas fa-minus',
-				'js_row_action' => "{$this->GetWidgetName()}.links_view_table('DeleteLinkedObject', aRowData['Link/_key_/raw'], oTrElement);",
-				'confirmation'  => [
+				'label'            => 'UI:Links:Remove:Button',
+				'name'             => 'RemoveButton',
+				'tooltip'          => $this->GetDictionaryEntry(static::DICT_REMOVE_BUTTON_TOOLTIP),
+				'tooltip_row_data' => 'Remote/friendlyname',
+				'icon_classes'     => 'fas fa-minus',
+				'js_row_action'    => "{$this->GetWidgetName()}.links_view_table('DeleteLinkedObject', aRowData['Link/_key_/raw'], oTrElement);",
+				'confirmation'     => [
 					'title'                      => $this->GetDictionaryEntry(static::DICT_REMOVE_MODAL_TITLE),
 					'message'                    => $this->GetDictionaryEntry(static::DICT_REMOVE_MODAL_MESSAGE),
 					'row_data'                   => "Remote/hyperlink",

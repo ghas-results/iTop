@@ -18,7 +18,10 @@ function getRowActionsColumnDefinition(sTableId, iColumnTargetIndex = -1)
 		type: "html",
 		orderable: false,
 		render: function ( data, type, row, meta ) {
-			return $(`#${sTableId}_actions_buttons_template`).html();
+			const sHtml = '<div>' + $(`#${sTableId}_actions_buttons_template`).html() + '</div>';
+			const $Template = $(sHtml);
+			initButtons($Template, row);
+			return $Template.html();
 		}
 	};
 
@@ -27,4 +30,28 @@ function getRowActionsColumnDefinition(sTableId, iColumnTargetIndex = -1)
 	}
 
 	return aColumn;
+}
+
+/**
+ * initButtons.
+ *
+ * @param $Template
+ * @param data
+ */
+function initButtons($Template, data)
+{
+	// Iterate throw buttons...
+	$('button', $Template).each(function(){
+
+		const sTooltipRowData = $(this).data('tooltip-row-data');
+
+		if(sTooltipRowData !== undefined){
+
+			let sTooltipContent = $(this).data('tooltip-content');
+
+			sTooltipContent = sTooltipContent.replaceAll('{item}', data[sTooltipRowData] === undefined ? '' : data[sTooltipRowData]);
+			$(this).attr('data-tooltip-content', sTooltipContent);
+		}
+
+	});
 }
