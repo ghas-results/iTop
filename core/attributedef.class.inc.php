@@ -3138,7 +3138,7 @@ class AttributeDecimal extends AttributeDBField
 		$iPrecision = $this->Get('decimals');
 		$iNbIntegerDigits = $iNbDigits - $iPrecision - 1; // -1 because the first digit is treated separately in the pattern below
 
-		return "^[-+]?[0-9]\d{0,$iNbIntegerDigits}(\.\d{0,$iPrecision})?$";
+		return "^[\-\+]?[0-9]\d{0,$iNbIntegerDigits}(\.\d{0,$iPrecision})?$";
 	}
 
 	public function GetBasicFilterOperators()
