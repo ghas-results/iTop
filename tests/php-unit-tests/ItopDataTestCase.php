@@ -481,8 +481,8 @@ class ItopDataTestCase extends ItopTestCase
 		$oUserProfile->Set('reason', 'UNIT Tests');
 		/** @var \ormLinkSet $oSet */
 		$oSet = $oUser->Get('profile_list');
-		$oSet->AddItem($oUserProfile);
-		$oUser = $this->updateObject('UserLocal', $oUser->GetKey(), array(
+		$oSet->AddObject($oUserProfile);
+		$oUser = $this->updateObject('User', $oUser->GetKey(), array(
 			'profile_list' => $oSet,
 		));
 		$this->debug("Updated {$oUser->GetName()} ({$oUser->GetKey()})");
