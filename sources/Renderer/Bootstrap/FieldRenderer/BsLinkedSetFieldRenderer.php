@@ -200,12 +200,13 @@ EOF
 
 					for(sKey in oLnkColumnProperties_{$this->oField->GetGlobalId()})
 					{
-                        aColumnProperties = oColumnProperties_{$this->oField->GetGlobalId()}[sKey];
+                        aColumnProperties = oLnkColumnProperties_{$this->oField->GetGlobalId()}[sKey];
+                                                 
 						// Level main column
 						aColumnsDefinition.push({
 							"width": "auto",
 							"searchable": true,
-							"sortable": !aColumnProperties.sortable,
+							"sortable": false,
 							"title": aColumnProperties.label,
 							"defaultContent": "",
 							"type": "html",
