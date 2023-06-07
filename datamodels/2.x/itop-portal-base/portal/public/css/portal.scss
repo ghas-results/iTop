@@ -1808,8 +1808,12 @@ table .group-actions .item-action-wrapper .panel-body > p:last-child{
 /**********************************************************/
 
 /* Hide attributes label in link set edition, will be fixed during attributes refactoring */
-.form_linkedset_wrapper label {
+.form_linkedset_wrapper .form_field_label {
   display: none;
+}
+
+.form_linkedset_wrapper .form_field_control {
+  width: 100%!important;
 }
 
 /* Add mandatory field column label */
@@ -1821,3 +1825,10 @@ table .group-actions .item-action-wrapper .panel-body > p:last-child{
   font-size: 0.9em;
 }
 
+input:valid {
+  background-color: palegreen;
+}
+
+input:invalid {
+  background-color: lightpink;
+}
