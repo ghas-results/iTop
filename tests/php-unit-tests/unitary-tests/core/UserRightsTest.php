@@ -560,7 +560,7 @@ class UserRightsTest extends ItopDataTestCase
 	public function testUserLocalCreation($aAssociatedProfilesBeforeUserCreation,
 		$aExpectedAssociatedProfilesAfterUserCreation)
 	{
-		$oUser = \MetaModel::NewObject(\UserLocal::class);
+		$oUser = new \UserLocal();
 		$sLogin = 'testUserLocalCreationWithPortalPowerUserProfile-'.uniqid();
 		$oUser->Set('login', $sLogin);
 		$oUser->Set('password', 'ABCD1234@gabuzomeu');
@@ -575,7 +575,7 @@ class UserRightsTest extends ItopDataTestCase
 	public function testUserLocalUpdate($aAssociatedProfilesBeforeUserCreation,
 		$aExpectedAssociatedProfilesAfterUserCreation)
 	{
-		$oUser = \MetaModel::NewObject(\UserLocal::class);
+		$oUser = new \UserLocal();
 		$sLogin = 'testUserLocalUpdateWithPortalPowerUserProfile-'.uniqid();
 		$oUser->Set('login', $sLogin);
 		$oUser->Set('password', 'ABCD1234@gabuzomeu');
@@ -590,7 +590,7 @@ class UserRightsTest extends ItopDataTestCase
 	public function testUserLDAPCreation($aAssociatedProfilesBeforeUserCreation,
 		$aExpectedAssociatedProfilesAfterUserCreation)
 	{
-		$oUser = \MetaModel::NewObject(\UserLDAP::class);
+		$oUser = new \UserLDAP();
 		$sLogin = 'testUserLDAPCreationWithPortalPowerUserProfile-'.uniqid();
 		$oUser->Set('login', $sLogin);
 		$this->commonUserCreation($oUser, $aAssociatedProfilesBeforeUserCreation, $aExpectedAssociatedProfilesAfterUserCreation);
@@ -603,7 +603,7 @@ class UserRightsTest extends ItopDataTestCase
 	public function testUserLDAPUpdate($aAssociatedProfilesBeforeUserCreation,
 		$aExpectedAssociatedProfilesAfterUserCreation)
 	{
-		$oUser = \MetaModel::NewObject(\UserLDAP::class);
+		$oUser = new \UserLDAP();
 		$sLogin = 'testUserLDAPUpdateWithPortalPowerUserProfile-'.uniqid();
 		$oUser->Set('login', $sLogin);
 		$this->commonUserUpdate($oUser, $aAssociatedProfilesBeforeUserCreation, $aExpectedAssociatedProfilesAfterUserCreation);
@@ -616,7 +616,7 @@ class UserRightsTest extends ItopDataTestCase
 	public function testUserExternalCreation($aAssociatedProfilesBeforeUserCreation,
 		$aExpectedAssociatedProfilesAfterUserCreation)
 	{
-		$oUser = \MetaModel::NewObject(\UserExternal::class);
+		$oUser = new \UserExternal();
 		$sLogin = 'testUserLDAPCreationWithPortalPowerUserProfile-'.uniqid();
 		$oUser->Set('login', $sLogin);
 		$this->commonUserCreation($oUser, $aAssociatedProfilesBeforeUserCreation, $aExpectedAssociatedProfilesAfterUserCreation);
@@ -629,7 +629,7 @@ class UserRightsTest extends ItopDataTestCase
 	public function testUserExternalUpdate($aAssociatedProfilesBeforeUserCreation,
 		$aExpectedAssociatedProfilesAfterUserCreation)
 	{
-		$oUser = \MetaModel::NewObject(\UserExternal::class);
+		$oUser = new \UserExternal();
 		$sLogin = 'testUserLDAPUpdateWithPortalPowerUserProfile-'.uniqid();
 		$oUser->Set('login', $sLogin);
 		$this->commonUserUpdate($oUser, $aAssociatedProfilesBeforeUserCreation, $aExpectedAssociatedProfilesAfterUserCreation);
@@ -676,7 +676,8 @@ class UserRightsTest extends ItopDataTestCase
 		}
 
 		foreach ($aExpectedAssociatedProfilesAfterUserCreation as $sExpectedProfileName){
-			$this->assertTrue(in_array($sExpectedProfileName, $aProfilesAfterCreation), "profile \'$sExpectedProfileName\' should be asociated to user after creation" );
+			$this->assertTrue(in_array($sExpectedProfileName, $aProfilesAfterCreation),
+				"profile \'$sExpectedProfileName\' should be asociated to user after creation. " .  var_export($aProfilesAfterCreation, true) );
 		}
 
 		$_SESSION = [];

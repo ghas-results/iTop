@@ -1021,7 +1021,7 @@ class UserRights
 	 * @since 3.1 N°5324
 	 * @return bool
 	 */
-	public static function CheckProfiles($oUser) : bool
+	public static function CheckProfiles(\User $oUser) : bool
 	{
 		if (!is_null($oUser))
 		{
