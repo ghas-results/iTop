@@ -38,6 +38,11 @@ class UserProfilesEventListener implements iEventServiceSetup
 			$aEventSource
 		);
 
+		EventService::RegisterListener(
+			EVENT_DB_LINKS_CHANGED,
+			$callback,
+			$aEventSource
+		);
 	}
 
 	public function OnUserProfileLinkChange(EventData $oEventData): void {

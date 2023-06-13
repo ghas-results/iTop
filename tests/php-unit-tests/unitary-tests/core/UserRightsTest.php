@@ -635,8 +635,7 @@ class UserRightsTest extends ItopDataTestCase
 		$this->commonUserUpdate($oUser, $aAssociatedProfilesBeforeUserCreation, $aExpectedAssociatedProfilesAfterUserCreation);
 	}
 
-	public function commonUserCreation($oUserToCreate, $aAssociatedProfilesBeforeUserCreation,
-		$aExpectedAssociatedProfilesAfterUserCreation)
+	public function CreateUserForProfileTesting(\User $oUserToCreate, array $aAssociatedProfilesBeforeUserCreation) : array
 	{
 		$aProfiles = [];
 		$oSearch = \DBSearch::FromOQL("SELECT URP_Profiles");
@@ -663,6 +662,15 @@ class UserRightsTest extends ItopDataTestCase
 
 		$oUserToCreate->Set('profile_list', $oUserProfileList);
 		$sId = $oUserToCreate->DBInsert();
+
+		return [ $sId, $aProfiles];
+	}
+
+	public function commonUserCreation($oUserToCreate, $aAssociatedProfilesBeforeUserCreation,
+		$aExpectedAssociatedProfilesAfterUserCreation)
+	{
+		$sUserClass = get_class($oUserToCreate);
+		list ($sId, $aProfiles)  = $this->CreateUserForProfileTesting($oUserToCreate, $aAssociatedProfilesBeforeUserCreation);
 
 		$this->CheckProfilesAreOk($sUserClass, $sId, $aExpectedAssociatedProfilesAfterUserCreation);
 	}
@@ -701,28 +709,8 @@ class UserRightsTest extends ItopDataTestCase
 	public function commonUserUpdate($oUserToCreate, $aAssociatedProfilesBeforeUserCreation,
 		$aExpectedAssociatedProfilesAfterUserCreation)
 	{
-		$aProfiles = [];
-		$oSearch = \DBSearch::FromOQL("SELECT URP_Profiles");
-		$oProfileSet = new DBObjectSet($oSearch);
-		while (($oProfile = $oProfileSet->Fetch()) != null){
-			$aProfiles[$oProfile->Get('name')] = $oProfile;
-		}
-
-		$this->CreateTestOrganization();
-		$oContact = $this->CreatePerson("1");
-		$iContactid = $oContact->GetKey();
-
-		$oUserToCreate->Set('contactid', $iContactid);
 		$sUserClass = get_class($oUserToCreate);
-
-		$oAdminUrpProfile = new URP_UserProfile();
-		$oProfile = $aProfiles["Administrator"];
-		$iAdminProfileId = $oProfile->GetKey();
-		$oAdminUrpProfile->Set('profileid', $iAdminProfileId);
-		$oProfileList = $oUserToCreate->Get('profile_list');
-		$oProfileList->AddItem($oAdminUrpProfile);
-		$oUserToCreate->Set('profile_list', $oProfileList);
-		$sId = $oUserToCreate->DBInsert();
+		list ($sId, $aProfiles)  = $this->CreateUserForProfileTesting($oUserToCreate, ["Administrator"]);
 
 		$oUserToUpdate = \MetaModel::GetObject($sUserClass, $sId);
 		$oProfileList = $oUserToUpdate->Get('profile_list');
@@ -742,5 +730,126 @@ class UserRightsTest extends ItopDataTestCase
 		$oUserToUpdate->DBWrite();
 
 		$this->CheckProfilesAreOk($sUserClass, $sId, $aExpectedAssociatedProfilesAfterUserCreation);
+	}
+
+	public function testUpdateUserExternalProfilesViaLinks(){
+		$aInitialProfiles = [ "Administrator", "Portal power user"];
+
+		$oUser = new \UserExternal();
+		$sLogin = 'testUserLDAPUpdateWithPortalPowerUserProfile-'.uniqid();
+		$oUser->Set('login', $sLogin);
+
+		$sUserClass = get_class($oUser);
+		list ($sId, $aProfiles)  = $this->CreateUserForProfileTesting($oUser, $aInitialProfiles);
+
+		$aURPUserProfileByUser = $this->GetURPUserProfileByUser($sId);
+		$aProfilesToRemove = ["Administrator"];
+		foreach ($aProfilesToRemove as $sProfileName){
+			if (array_key_exists($sProfileName, $aURPUserProfileByUser)){
+				$oURPUserProfile = $aURPUserProfileByUser[$sProfileName];
+				$oURPUserProfile->DBDelete();
+			}
+		}
+
+		$aExpectedProfilesAfterUpdate = ["Portal power user", "Portal user"];
+		$this->CheckProfilesAreOk($sUserClass, $sId, $aExpectedProfilesAfterUpdate);
+	}
+
+	public function BulkUpdateUserExternalProfilesViaLinksProvider(){
+		return [
+			'user profiles REPAIR 1' => [
+				"aInitialProfiles" => [ "Administrator"],
+				"aOperation" => [
+					'-Administrator',
+					'+Portal power user',
+				],
+				"aExpectedProfilesAfterUpdate" => ["Portal power user", "Portal user"],
+			],
+			'user profiles REPAIR 2' => [
+				"aInitialProfiles" => [ "Administrator"],
+				"aOperation" => [
+					'+Portal power user',
+					'-Administrator',
+				],
+				"aExpectedProfilesAfterUpdate" => ["Portal power user", "Portal user"],
+			],
+			'user profiles REPAIR 3' => [
+				"aInitialProfiles" => [ "Administrator", "Portal power user"],
+				"aOperation" => [
+					'-Administrator',
+				],
+				"aExpectedProfilesAfterUpdate" => ["Portal power user", "Portal user"],
+			],
+			'NOTHING DONE with 1 profile' => [
+				"aInitialProfiles" => [ "Administrator", "Portal power user"],
+				"aOperation" => [
+					'-Portal power user',
+				],
+				"aExpectedProfilesAfterUpdate" => ["Administrator"],
+			],
+			'NOTHING DONE with 2 profiles including power...' => [
+				"aInitialProfiles" => [ "Administrator"],
+				"aOperation" => [
+					'+Portal power user',
+				],
+				"aExpectedProfilesAfterUpdate" => ["Administrator", "Portal power user"],
+			],
+			'NOTHING DONE with 2 profiles including power again ...' => [
+				"aInitialProfiles" => [ "Administrator"],
+				"aOperation" => [
+					'+Portal power user',
+				],
+				"aExpectedProfilesAfterUpdate" => ["Portal user", "Portal power user"],
+			],
+		];
+	}
+
+	/**
+	 * @dataProvider BulkUpdateUserExternalProfilesViaLinksProvider
+	 */
+	public function testBulkUpdateUserExternalProfilesViaLinks($aInitialProfiles, $aOperation, $aExpectedProfilesAfterUpdate){
+		$oUser = new \UserExternal();
+		$sLogin = 'testUserLDAPUpdateWithPortalPowerUserProfile-'.uniqid();
+		$oUser->Set('login', $sLogin);
+
+		$sUserClass = get_class($oUser);
+		list ($sId, $aProfiles)  = $this->CreateUserForProfileTesting($oUser, $aInitialProfiles);
+
+		\cmdbAbstractObject::SetEventDBLinksChangedBlocked(true);
+
+		$aURPUserProfileByUser = $this->GetURPUserProfileByUser($sId);
+		foreach ($aOperation as $sOperation){
+			$sOp = substr($sOperation,0, 1);
+			$sProfileName = substr($sOperation,1);
+
+			if ($sOp === "-"){
+				if (array_key_exists($sProfileName, $aURPUserProfileByUser)){
+					$oURPUserProfile = $aURPUserProfileByUser[$sProfileName];
+					$oURPUserProfile->DBDelete();
+				}
+			} else {
+				$oAdminUrpProfile = new URP_UserProfile();
+				$oProfile = $aProfiles[$sProfileName];
+				$oAdminUrpProfile->Set('profileid', $oProfile->GetKey());
+				$oAdminUrpProfile->Set('userid', $sId);
+				$oAdminUrpProfile->DBInsert();
+			}
+		}
+
+		\cmdbAbstractObject::SetEventDBLinksChangedBlocked(false);
+		\cmdbAbstractObject::FireEventDbLinksChangedForAllObjects();
+
+		$this->CheckProfilesAreOk($sUserClass, $sId, $aExpectedProfilesAfterUpdate);
+	}
+
+	private function GetURPUserProfileByUser($iUserId) : array {
+		$aRes = [];
+		$oSearch = \DBSearch::FromOQL("SELECT URP_UserProfile WHERE userid=$iUserId");
+		$oSet = new DBObjectSet($oSearch);
+		while (($oURPUserProfile = $oSet->Fetch()) != null){
+			$aRes[$oURPUserProfile->Get('profile')] = $oURPUserProfile;
+		}
+
+		return $aRes;
 	}
 }
