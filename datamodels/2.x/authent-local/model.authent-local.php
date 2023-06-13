@@ -146,15 +146,6 @@ class UserLocal extends UserInternal
 		return true;
 	}
 
-	/**
-	 * @since 3.1 N°5324
-	 * @return bool
-	 */
-	public function CheckProfiles() : bool
-	{
-		return \UserRights::CheckProfiles($this);
-	}
-
 	public function ChangePassword($sOldPassword, $sNewPassword)
 	{
 		/** @var \ormPassword $oPassword */

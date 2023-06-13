@@ -48,8 +48,8 @@ use Server;
 use TagSetFieldData;
 use Ticket;
 use URP_UserProfile;
-use UserRequest;
 use User;
+use UserRequest;
 use VirtualHost;
 use VirtualMachine;
 use XMLDataLoader;
@@ -482,7 +482,7 @@ class ItopDataTestCase extends ItopTestCase
 		$oUserProfile->Set('reason', 'UNIT Tests');
 		/** @var \ormLinkSet $oSet */
 		$oSet = $oUser->Get('profile_list');
-		$oSet->AddObject($oUserProfile);
+		$oSet->AddItem($oUserProfile);
 		$oUser = $this->updateObject(User::class, $oUser->GetKey(), array(
 			'profile_list' => $oSet,
 		));

@@ -3,7 +3,7 @@
 //
 //   This file is part of iTop.
 //
-//   iTop is free software; you can redistribute it and/or modify	
+//   iTop is free software; you can redistribute it and/or modify
 //   it under the terms of the GNU Affero General Public License as published by
 //   the Free Software Foundation, either version 3 of the License, or
 //   (at your option) any later version.
@@ -36,6 +36,7 @@ SetupWebPage::AddModule(
 		// Components
 		//
 		'datamodel' => array(
+			'src/UserProfilesEventListener.php'
 		),
 		'webservice' => array(
 			//'webservices.itop-profiles-itil.php',
@@ -46,7 +47,7 @@ SetupWebPage::AddModule(
 		'data.sample' => array(
 			//'data.sample.itop-profiles-itil.xml',
 		),
-		
+
 		// Documentation
 		//
 		'doc.manual_setup' => '',

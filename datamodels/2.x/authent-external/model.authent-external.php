@@ -92,15 +92,6 @@ class UserExternal extends User
 		return false;
 	}
 
-	/**
-	 * @since 3.1 N°5324
-	 * @return bool
-	 */
-	public function CheckProfiles() : bool
-	{
-		return \UserRights::CheckProfiles($this);
-	}
-
 	public function ChangePassword($sOldPassword, $sNewPassword)
 	{
 		return false;

@@ -265,10 +265,6 @@ abstract class User extends cmdbAbstractObject
 	abstract public function TrustWebServerContext();
 	abstract public function CanChangePassword();
 	abstract public function ChangePassword($sOldPassword, $sNewPassword);
-	/**
-	 * @since 3.1 N°5324 - Avoid to have users with non-standalone power portal profile only
-	 */
-	abstract public function CheckProfiles() : bool;
 
 	/*
 	* Compute a name in best effort mode
@@ -717,15 +713,6 @@ abstract class UserInternal extends User
 		$sRes = trim($oContact->Get($sEmailAttCode));
 		return $sRes;
 	}
-
-	/**
-	 * @since 3.1 N°5324
-	 * @return bool
-	 */
-	public function CheckProfiles() : bool
-	{
-		return \UserRights::CheckProfiles($this);
-	}
 }
 
 /**
@@ -1014,41 +1001,6 @@ class UserRights
 		{
 			return false;
 		}
-	}
-
-	/**
-	 * @param \User $oUser
-	 * @since 3.1 N°5324
-	 * @return bool
-	 */
-	public static function CheckProfiles(\User $oUser) : bool
-	{
-		if (!is_null($oUser))
-		{
-			$oCurrentUserProfileSet = $oUser->Get('profile_list');
-			if ($oCurrentUserProfileSet->Count() === 1){
-				$oProfile = $oCurrentUserProfileSet->Fetch();
-
-				if (POWER_USER_PORTAL_PROFILE_NAME === $oProfile->Get('profile')){
-					//add portal user
-					// power portal user is not a standalone profile (it will break console UI)
-					$sOQL = sprintf("SELECT URP_Profiles WHERE name = '%s'", PORTAL_PROFILE_NAME);
-					$oSearch = \DBSearch::FromOQL($sOQL);
-					$oSearch->AllowAllData();
-					$oSet = new DBObjectSet($oSearch);
-					if ($oSet->Count() !==1){
-						return false;
-					}
-
-					$oUserPortalProfile = $oSet->Fetch();
-					$oUserProfile = new URP_UserProfile();
-					$oUserProfile->Set('profileid', $oUserPortalProfile->GetKey());
-					$oCurrentUserProfileSet->AddItem($oUserProfile);
-					$oUser->Set('profile_list', $oCurrentUserProfileSet);
-				}
-			}
-		}
-		return true;
 	}
 
 	/**

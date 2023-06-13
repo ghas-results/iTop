@@ -382,7 +382,6 @@ return array(
     'Combodo\\iTop\\Core\\Email\\EmailFactory' => $baseDir . '/sources/Core/Email/EmailFactory.php',
     'Combodo\\iTop\\Core\\Email\\iEMail' => $baseDir . '/sources/Core/Email/iEMail.php',
     'Combodo\\iTop\\Core\\EventListener\\AttributeBlobEventListener' => $baseDir . '/sources/Core/EventListener/AttributeBlobEventListener.php',
-    'Combodo\\iTop\\Core\\EventListener\\UserProfilesEventListener' => $baseDir . '/sources/Core/EventListener/UserProfilesEventListener.php',
     'Combodo\\iTop\\Core\\MetaModel\\FriendlyNameType' => $baseDir . '/sources/Core/MetaModel/FriendlyNameType.php',
     'Combodo\\iTop\\Core\\MetaModel\\HierarchicalKey' => $baseDir . '/sources/Core/MetaModel/HierarchicalKey.php',
     'Combodo\\iTop\\DesignDocument' => $baseDir . '/core/designdocument.class.inc.php',
