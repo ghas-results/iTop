@@ -351,19 +351,6 @@ abstract class Field
 	 * @return $this
 	 */
 	public function SetMandatory(bool $bMandatory) {
-		// Before changing the property, we check if it was already mandatory. If not, we had the mandatory validator
-		if ($bMandatory && !$this->bMandatory) {
-			$this->AddValidator($this->GetMandatoryValidatorInstance());
-		}
-
-		if (false === $bMandatory) {
-			foreach ($this->aValidators as $iKey => $oValue) {
-				if ($oValue instanceof MandatoryValidator) {
-					unset($this->aValidators[$iKey]);
-				}
-			}
-		}
-
 		$this->bMandatory = $bMandatory;
 
 		return $this;
@@ -568,28 +555,5 @@ abstract class Field
 	 * @uses SetValid()
 	 * @uses AddErrorMessage()
 	 */
-	public function Validate() {
-		$this->SetValid(true);
-		$this->EmptyErrorMessages();
-
-		if ($this->bValidationDisabled) {
-			return $this->GetValid();
-		}
-
-		$bEmpty = (($this->GetCurrentValue() === null) || ($this->GetCurrentValue() === ''));
-
-		if (!$bEmpty || $this->GetMandatory()) {
-			foreach ($this->GetValidators() as $oValidator) {
-				[$bIsFieldValid, $sValidationErrorMessage] = $oValidator->Validate($this->GetCurrentValue());
-
-				/** @var bool $bIsFieldValid */
-				if (false === $bIsFieldValid) {
-					$this->SetValid(false);
-					$this->AddErrorMessage($sValidationErrorMessage);
-				}
-			}
-		}
-
-		return $this->GetValid();
-	}
+	abstract public function Validate();
 }

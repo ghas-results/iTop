@@ -19,8 +19,8 @@
 
 namespace Combodo\iTop\Form\Field;
 
-use \Closure;
-use \Combodo\iTop\Form\Form;
+use Closure;
+use Combodo\iTop\Form\Form;
 
 /**
  * Description of SubFormField
@@ -65,7 +65,7 @@ class SubFormField extends Field
 	 * Checks the validators to see if the field's current value is valid.
 	 * Then sets $bValid and $aErrorMessages.
 	 *
-	 * @return boolean
+	 * @inheritDoc
 	 */
 	public function Validate()
 	{
@@ -125,11 +125,11 @@ class SubFormField extends Field
 	 */
 	public function SetMandatory(bool $bMandatory)
 	{
-		foreach ($this->oForm->GetFields() as $oField)
-		{
+		foreach ($this->oForm->GetFields() as $oField) {
 			$oField->SetMandatory($bMandatory);
 		}
-		parent::SetMandatory($bMandatory);
+
+		return parent::SetMandatory($bMandatory);
 	}
 
 	/**

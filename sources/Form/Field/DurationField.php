@@ -19,22 +19,20 @@
 
 namespace Combodo\iTop\Form\Field;
 
-use Str;
 use AttributeDuration;
+use Str;
 
 /**
  * Description of StringField
  */
-class DurationField extends Field
-{
+class DurationField extends AbstractSimpleField {
 
 	/**
 	 * Note: This is inspired by AttributeDuration::GetAsHTML()
 	 *
 	 * @inheritDoc
 	 */
-	public function GetDisplayValue()
-	{
+	public function GetDisplayValue() {
 		return Str::pure2html(AttributeDuration::FormatDuration($this->currentValue));
 	}
 

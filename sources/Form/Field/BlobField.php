@@ -19,23 +19,21 @@
 
 namespace Combodo\iTop\Form\Field;
 
-use utils;
 use Dict;
+use utils;
 
 /**
  * Description of BlobField
  *
  * @author Guillaume Lajarige <guillaume.lajarige@combodo.com>
  */
-class BlobField extends Field
-{
+class BlobField extends AbstractSimpleField {
 	/** @var string */
 	protected $sDownloadUrl;
 	/** @var string */
 	protected $sDisplayUrl;
 
-	public function GetDownloadUrl()
-	{
+	public function GetDownloadUrl() {
 		return $this->sDownloadUrl;
 	}
 
