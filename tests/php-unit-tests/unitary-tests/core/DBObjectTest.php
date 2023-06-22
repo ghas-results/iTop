@@ -140,13 +140,28 @@ class DBObjectTest extends ItopDataTestCase
 	 * @covers DBObject::Get
 	 * @covers DBObject::Set
 	 */
-	public function testAttributeRefresh_FriendlyName()
+	public function testAttributeRefresh_FriendlyNameWithoutCascade()
 	{
 		$oObject = \MetaModel::NewObject('Person', array('name' => 'Foo', 'first_name' => 'John', 'org_id' => 3, 'location_id' => 2));
 
 		static::assertEquals('John Foo', $oObject->Get('friendlyname'));
 		$oObject->Set('name', 'Who');
 		static::assertEquals('John Who', $oObject->Get('friendlyname'));
+	}
+
+	/**
+	 * @covers DBObject::NewObject
+	 * @covers DBObject::Get
+	 * @covers DBObject::Set
+	 */
+	public function testAttributeRefresh_FriendlyNameWithCascade()
+	{
+		$oServer = \MetaModel::NewObject('Server', ['name' => 'ServerTest', 'org_id' => 3]);
+		$oServer->DBInsert();
+		$oDBServer = \MetaModel::NewObject('DBServer', ['name' => 'DBServerTest', 'org_id' => 3, 'system_id' => $oServer]);
+
+		static::assertEquals('ServerTest', $oDBServer->Get('system_name'));
+		static::assertEquals('DBServerTest ServerTest', $oDBServer->Get('friendlyname'));
 	}
 
 	/**
@@ -206,13 +221,30 @@ class DBObjectTest extends ItopDataTestCase
 	 * @covers DBObject::Get
 	 * @covers DBObject::Set
 	 */
-	public function testAttributeRefresh_ObsolescenceFlag()
+	public function testAttributeRefresh_ObsolescenceFlagWithoutCascade()
 	{
 		$oObject = \MetaModel::NewObject('Person', array('name' => 'Foo', 'first_name' => 'John', 'org_id' => 3, 'location_id' => 2));
 
 		static::assertEquals(false, (bool)$oObject->Get('obsolescence_flag'));
 		$oObject->Set('status', 'inactive');
 		static::assertEquals(true, (bool)$oObject->Get('obsolescence_flag'));
+	}
+
+	/**
+	 * @covers DBObject::NewObject
+	 * @covers DBObject::Get
+	 * @covers DBObject::Set
+	 */
+	public function testAttributeRefresh_ObsolescenceFlagWithCascade()
+	{
+		// Necessary ext. key for $oDBServer
+		$oServer = \MetaModel::NewObject('Server', ['name' => 'ServerTest', 'org_id' => 3]);
+		$oServer->DBInsert();
+		$oDBServer = \MetaModel::NewObject('DBServer', ['name' => 'DBServerTest', 'org_id' => 3, 'system_id' => $oServer, 'status' => 'inactive']);
+		$oDBServer->DBInsert();
+
+		$oDBSchema = \MetaModel::NewObject('DatabaseSchema', ['name' => 'DBSchemaTest', 'org_id' => 3, 'dbserver_id' => $oDBServer]);
+		static::assertEquals(true, $oDBSchema->Get('obsolescence_flag'));
 	}
 
 	/**
