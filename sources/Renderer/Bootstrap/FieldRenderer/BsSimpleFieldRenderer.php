@@ -28,8 +28,8 @@ use Combodo\iTop\Form\Field\DateTimeField;
 use Combodo\iTop\Form\Field\Field;
 use Combodo\iTop\Form\Field\MultipleChoicesField;
 use Combodo\iTop\Form\Field\TextAreaField;
+use Combodo\iTop\Form\Validator\AbstractRegexpValidator;
 use Combodo\iTop\Form\Validator\MandatoryValidator;
-use Combodo\iTop\Form\Validator\Validator;
 use Combodo\iTop\Renderer\RenderingOutput;
 use Dict;
 use InlineImage;
@@ -758,7 +758,7 @@ JS
 		foreach ($oField->GetValidators() as $oValidator) {
 
 			// Validator
-			if (get_class($oValidator) === Validator::class) {
+			if ($oValidator instanceof AbstractRegexpValidator) {
 				if (!($oField instanceof DateField || $oField instanceof DateTimeField)) { // unrecognized regular expression
 					$sTags .= ' pattern="'.$oValidator->GetRegExp().'" ';
 				}

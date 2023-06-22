@@ -28,6 +28,7 @@ use Combodo\iTop\Application\UI\Base\Component\Input\SelectUIBlockFactory;
 use Combodo\iTop\Application\UI\Base\Layout\UIContentBlockUIBlockFactory;
 use Combodo\iTop\Form\Field\SelectObjectField;
 use Combodo\iTop\Form\Validator\MandatoryValidator;
+use Combodo\iTop\Form\Validator\NotEmptyExtKeyValidator;
 use Combodo\iTop\Renderer\BlockRenderer;
 use Combodo\iTop\Renderer\FieldRenderer;
 use DBObjectSet;
@@ -247,8 +248,7 @@ JS
 		$aValidators = array();
 		foreach ($this->oField->GetValidators() as $oValidator)
 		{
-			if ($oValidator::GetName() == 'notemptyextkey')
-			{
+			if ($oValidator instanceof NotEmptyExtKeyValidator) {
 				// The autocomplete widget returns an empty string if the value is undefined (and the select has been aligned with this behavior)
 				$oValidator = new MandatoryValidator();
 			}
