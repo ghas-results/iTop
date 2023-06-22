@@ -21,10 +21,10 @@ abstract class AbstractRegexpValidator extends AbstractValidator {
 
 	public function Validate($value): array {
 		if (preg_match($this->GetRegExp(true), $value)) {
-			return [true, null];
+			return [];
 		}
 
-		return [false, $this->sErrorMessage];
+		return [$this->sErrorMessage];
 	}
 
 	/**

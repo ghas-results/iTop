@@ -483,14 +483,28 @@ abstract class Field
 	}
 
 	/**
+	 * @return $this
+	 */
+	final public function RemoveValidatorsOfClass($sValidatorClassName) {
+		foreach ($this->aValidators as $iKey => $oValue) {
+			if ($oValue instanceof $sValidatorClassName) {
+				unset($this->aValidators[$iKey]);
+			}
+		}
+
+		return $this;
+	}
+
+	/**
 	 * Note : Function is protected as aErrorMessages should not be add from outside
 	 *
 	 * @param string $sErrorMessage
+	 *
 	 * @return $this
 	 */
-	protected function AddErrorMessage(string $sErrorMessage)
-	{
+	protected function AddErrorMessage(string $sErrorMessage) {
 		$this->aErrorMessages[] = $sErrorMessage;
+
 		return $this;
 	}
 

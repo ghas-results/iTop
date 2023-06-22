@@ -19,7 +19,7 @@ abstract class AbstractValidator {
 	/** @var string message / dict key to use when an error occurs */
 	protected string $sErrorMessage;
 
-	public function __construct(?string $sErrorMessage) {
+	public function __construct(?string $sErrorMessage = null) {
 		if (false === utils::IsNullOrEmptyString($sErrorMessage)) {
 			$this->sErrorMessage = $sErrorMessage;
 		}
@@ -31,7 +31,7 @@ abstract class AbstractValidator {
 	/**
 	 * @param mixed $value
 	 *
-	 * @return array<bool,?string> boolean valid for valid / invalid, and error message if invalid
+	 * @return string[] list of error messages, empty array if no error
 	 */
 	abstract public function Validate($value): array;
 

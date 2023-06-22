@@ -422,6 +422,7 @@ return array(
     'Combodo\\iTop\\Form\\Validator\\IntegerValidator' => $baseDir . '/sources/Form/Validator/IntegerValidator.php',
     'Combodo\\iTop\\Form\\Validator\\LinkedSetValidator' => $baseDir . '/sources/Form/Validator/LinkedSetValidator.php',
     'Combodo\\iTop\\Form\\Validator\\MandatoryValidator' => $baseDir . '/sources/Form/Validator/MandatoryValidator.php',
+    'Combodo\\iTop\\Form\\Validator\\MultipleChoicesValidator' => $baseDir . '/sources/Form/Validator/MultipleChoicesValidator.php',
     'Combodo\\iTop\\Form\\Validator\\NotEmptyExtKeyValidator' => $baseDir . '/sources/Form/Validator/NotEmptyExtKeyValidator.php',
     'Combodo\\iTop\\Form\\Validator\\Validator' => $baseDir . '/sources/Form/Validator/Validator.php',
     'Combodo\\iTop\\Renderer\\BlockRenderer' => $baseDir . '/sources/Renderer/BlockRenderer.php',
