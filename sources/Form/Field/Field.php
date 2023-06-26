@@ -70,6 +70,12 @@ abstract class Field
 	protected $sDisplayMode;
 	/** @var array */
 	protected $aValidators;
+	/**
+	 * @var bool
+	 * @since 3.1.0 N°6414
+	 */
+	protected $bValidationDisabled;
+
 	/** @var bool */
 	protected $bValid;
 	/** @var array */
@@ -96,6 +102,7 @@ abstract class Field
 		$this->bMandatory = static::DEFAULT_MANDATORY;
 		$this->sDisplayMode = static::DEFAULT_DISPLAY_MODE;
 		$this->aValidators = array();
+		$this->bValidationDisabled = false;
 		$this->bValid = static::DEFAULT_VALID;
 		$this->aErrorMessages = array();
 		$this->onFinalizeCallback = $onFinalizeCallback;
@@ -525,24 +532,40 @@ abstract class Field
 	 * 
 	 * @return boolean
 	 */
-	public function IsEditable()
-	{
+	public function IsEditable() {
 		return (!$this->bReadOnly && !$this->bHidden);
 	}
 
-	public function OnCancel()
-	{
+	public function OnCancel() {
 		// Overload when needed
 	}
 
-	public function OnFinalize()
-	{
-		if ($this->onFinalizeCallback !== null)
-		{
+	public function OnFinalize() {
+		if ($this->onFinalizeCallback !== null) {
 			// Note : We MUST have a temp variable to call the Closure. otherwise it won't work when the Closure is a class member
 			$callback = $this->onFinalizeCallback;
 			$callback($this);
 		}
+	}
+
+	/**
+	 * @param bool $bValidationDisabled
+	 *
+	 * @return $this
+	 *
+	 * @since 3.1.0 N°6414
+	 */
+	public function SetValidationDisabled(bool $bValidationDisabled = true): Field {
+		$this->bValidationDisabled = $bValidationDisabled;
+
+		return $this;
+	}
+
+	/**
+	 * @return bool
+	 */
+	public function IsValidationDisabled(): bool {
+		return $this->bValidationDisabled;
 	}
 
 	/**
@@ -551,19 +574,19 @@ abstract class Field
 	 *
 	 * @return boolean
 	 */
-	public function Validate()
-	{
+	public function Validate() {
 		$this->SetValid(true);
 		$this->EmptyErrorMessages();
 
-		$bEmpty = ( ($this->GetCurrentValue() === null) || ($this->GetCurrentValue() === '') );
+		if ($this->bValidationDisabled) {
+			return $this->GetValid();
+		}
 
-		if (!$bEmpty || $this->GetMandatory())
-		{
-			foreach ($this->GetValidators() as $oValidator)
-			{
-				if (!preg_match($oValidator->GetRegExp(true), $this->GetCurrentValue()))
-				{
+		$bEmpty = (($this->GetCurrentValue() === null) || ($this->GetCurrentValue() === ''));
+
+		if (!$bEmpty || $this->GetMandatory()) {
+			foreach ($this->GetValidators() as $oValidator) {
+				if (!preg_match($oValidator->GetRegExp(true), $this->GetCurrentValue())) {
 					$this->SetValid(false);
 					$this->AddErrorMessage($oValidator->GetErrorMessage());
 				}

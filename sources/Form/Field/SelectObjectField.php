@@ -283,27 +283,10 @@ class SelectObjectField extends Field
 	 *
 	 * @throws \CoreException
 	 *
-	 * @deprecated 3.1.0 N°6414 use ResetCurrentValueIfNotAmongAllowedValues instead
+	 * @deprecated 3.1.0 N°6414 now only modified fields are checked (We are calling {@see static::SetValidationDisabled()} in {@see AttributeDefinition::MakeFormField})
 	 */
 	public function VerifyCurrentValue(bool $bAlways = false) {
 		DeprecatedCallsLog::NotifyDeprecatedPhpMethod('3.1.0 N°6414 use ResetCurrentValueIfNotAmongAllowedValues instead');
-		$this->ResetCurrentValueIfNotAmongAllowedValues($bAlways);
-	}
-
-	/**
-	 * Resets current value if not among allowed ones.
-	 * By default, reset is done ONLY when the field is not read-only.
-	 *
-	 * Called conditionally from {@see \Combodo\iTop\Portal\Form\ObjectFormManager::Build}
-	 * This check isn't in the Validate method as we don't want to check for untouched and invalid values (value was set in the past, it is now invalid, but the user didn't change it)
-	 *
-	 * @param boolean $bAlways Set to true to verify even when the field is read-only.
-	 *
-	 * @throws \CoreException
-	 *
-	 * @since 3.1.0 N°6414 replaces VerifyCurrentValue$
-	 */
-	public function ResetCurrentValueIfNotAmongAllowedValues(bool $bAlways = false) {
 		if (!$this->GetReadOnly() || $bAlways) {
 			$oValuesSet = $this->GetObjectsSet();
 
