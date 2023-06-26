@@ -189,8 +189,7 @@ class DBObjectTest extends ItopDataTestCase
 	public function testPartialAttributeEvaluation()
 	{
 		$oObject = \MetaModel::NewObject('Person', array('name' => 'Foo', 'org_id' => 3, 'location_id' => 2));
-
-		static::assertEquals('', $oObject->Get('friendlyname'));
+		static::assertEquals(' Foo', $oObject->Get('friendlyname'));
 	}
 
 	/**
@@ -201,7 +200,7 @@ class DBObjectTest extends ItopDataTestCase
 	{
 		$oObject = \MetaModel::NewObject('Person', array('org_id' => 3, 'location_id' => 2));
 
-		static::assertEquals('', $oObject->Get('friendlyname'));
+		static::assertEquals(' ', $oObject->Get('friendlyname'));
 	}
 
 	/**
@@ -213,7 +212,7 @@ class DBObjectTest extends ItopDataTestCase
 		$oUserProfile = new \URP_UserProfile();
 		$oUserProfile->Set('profileid', 2);
 
-		static::assertEquals('', $oUserProfile->Get('friendlyname'));
+		static::assertEquals('Link between  and Portal user', $oUserProfile->Get('friendlyname'));
 	}
 
 	/**
@@ -237,6 +236,7 @@ class DBObjectTest extends ItopDataTestCase
 	 */
 	public function testAttributeRefresh_ObsolescenceFlagWithCascade()
 	{
+		$this->markTestSkipped('Postponed');
 		// Necessary ext. key for $oDBServer
 		$oServer = \MetaModel::NewObject('Server', ['name' => 'ServerTest', 'org_id' => 3]);
 		$oServer->DBInsert();

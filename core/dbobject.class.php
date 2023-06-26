@@ -6013,11 +6013,8 @@ abstract class DBObject implements iDisplay
 			}
 
 			$oAttDef = MetaModel::GetAttributeDef(get_class($this), $sAttCode);
-			$aSQLValues = $oAttDef->GetSQLValues($this->m_aCurrValues[$sAttCode]);
+			$aSQLValues = $oAttDef->GetSQLValues($this->Get($sAttCode));
 			$value = reset($aSQLValues);
-			if ($oAttDef->IsNull($value)) {
-				return '';
-			}
 			$aArgs[$sFieldDesc] = $value;
 		}
 
